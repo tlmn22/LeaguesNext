@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   },
   // exceljs нь node-only сан — bundle хийхгүй
   serverExternalPackages: ['exceljs', 'pg'],
+  // Supabase CA-г serverless функцэд багтаана (src/lib/postgres.ts уншина)
+  outputFileTracingIncludes: { '/**': ['./database/certs/supabase-ca.crt'] },
   poweredByHeader: false,
 };
 
