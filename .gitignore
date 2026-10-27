@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env.*.local
+uploads/
+*.tsbuildinfo
+next-env.d.ts
+
+# Generated migration files contain private account and player data.
+database/generated/
+
+.next-before-supabase-*/

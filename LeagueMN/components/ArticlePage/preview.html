@@ -1,0 +1,36 @@
+<!-- @dsCard group="Pages" height=2100 width=1280 page subtitle="Мэдээний хуудас" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body>
+<div id="root"></div>
+<script>
+  var L = window.LeagueMN, D = L.demo, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div',null,
+    h(L.NavBar,{current:'Мэдээ'}),
+    h('main',{className:'lmn-main'},
+      h('a',{className:'lmn-back',href:'#'}, L.Icon('arrow_back'), 'Бүх мэдээ'),
+      h('div',{className:'lmn-body',style:{marginTop:0}},
+        h('article',null,
+          h('div',{className:'lmn-art-meta'}, h('span',{className:'lmn-tag'},'MCBA'), h('span',{className:'lmn-meta'}, L.Icon('calendar_today'), '2026.10.27')),
+          h('h1',{className:'lmn-art-title'}, D.featured.title),
+          h('figure',{className:'lmn-art-cover'}, h(L.NewsImage,{image:D.cover(0),book:false}), h('figcaption',null,'Зураг: LeagueMN')),
+          h('div',{className:'lmn-prose'},
+            h('p',{className:'lead'}, D.featured.excerpt),
+            h('div',{className:'lmn-card lmn-box'},
+              h('div',{style:{textAlign:'right'}}, h('div',{className:'lmn-team-abbr'},'HKH'), h('div',{className:'lmn-meta'},'Хан-Уул Хүлэгүүд')),
+              h('div',{className:'lmn-box-score'}, '86 ', h('span',null,':'), ' 79'),
+              h('div',null, h('div',{className:'lmn-team-abbr'},'BST'), h('div',{className:'lmn-meta'},'Бодь Старс'))),
+            h('p',null,'Эхний хагаст хоёр баг ээлжлэн тэргүүлж, завсарлагаанд 41:40 оноотой гарсан. Гуравдугаар үед Бодь Старсын хамгаалалт чангарч, 10 онооны зөрүү үүсгэсэн ч Хүлэгүүд сүүлийн үед хурдан довтолгоогоор зөрүүг богиносгожээ.'),
+            h('h3',null,'Шийдвэрлэх секундүүд'),
+            h('p',null,'Тоглолт дуусахад 0.8 секунд үлдэхэд Хүлэгүүдийн хамгаалагч хажуугийн шугамаас бөмбөг авч, гурван онооны шугамын гаднаас шидэлт хийсэн. Шүүгчид видео бичлэгээр шалгаж, оноог баталгаажуулав.'),
+            h('blockquote',null,'“Бид эцсээ хүртэл итгэж байсан. Энэ ялалт хөгжөөн дэмжигчдийнх.”'),
+            h('p',null,'Энэ ялалтаар Хан-Уул Хүлэгүүд 10 ялалт, 2 хожигдолтойгоор MCBA-ийн хүснэгтийг тэргүүлж байна. Дараагийн тоглолтоо 10-р сарын 28-нд Нийслэл Тайгерстай хийнэ.'))),
+        h('aside',{className:'lmn-aside'},
+          h(L.NewsList,{title:'Бусад мэдээ', items:D.list.slice(0,5), linkLabel:'Бүх мэдээ →'}),
+          h(L.UpcomingPanel,{games:D.upcoming.slice(0,3)})))),
+    h(L.Footer),
+    h(L.BottomTabBar,{current:'Мэдээ'})));
+</script>
+</body>
+</html>

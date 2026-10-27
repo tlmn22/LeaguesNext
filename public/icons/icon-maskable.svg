@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#161826"/>
+  <circle cx="256" cy="205" r="68" fill="none" stroke="#E8601C" stroke-width="9" opacity="0.9"/>
+  <path d="M195 152 Q256 205 195 258" fill="none" stroke="#E8601C" stroke-width="9" opacity="0.9"/>
+  <path d="M317 152 Q256 205 317 258" fill="none" stroke="#E8601C" stroke-width="9" opacity="0.9"/>
+  <path d="M188 205 H324" stroke="#E8601C" stroke-width="9" opacity="0.9"/>
+  <text x="256" y="360" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="100" letter-spacing="2" fill="#f3f5fe">MN</text>
+</svg>

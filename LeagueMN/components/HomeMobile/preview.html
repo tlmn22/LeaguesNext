@@ -1,0 +1,26 @@
+<!-- @dsCard group="Pages" height=3600 width=390 page subtitle="Mobile · 390" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body>
+<div id="root"></div>
+<script>
+  var L = window.LeagueMN, D = L.demo, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div',null,
+    h(L.NavBar,{current:'Нүүр'}),
+    h('main',{className:'lmn-main'},
+      h(L.ResultsStrip,{results:D.results}),
+      h('div',{className:'lmn-body'},
+        h('section',{className:'lmn-stack'},
+          h(L.SectionHeader,{title:'Мэдээ'}),
+          h(L.NewsFeatured,D.featured),
+          h('div',{className:'lmn-pair'}, h(L.NewsCard,D.pair[0]), h(L.NewsCard,D.pair[1])),
+          h(L.NewsList,{items:D.list})),
+        h('aside',{className:'lmn-aside'},
+          h(L.LeaguesPanel,{leagues:D.leagues}),
+          h(L.UpcomingPanel,{games:D.upcoming})))),
+    h(L.Footer),
+    h(L.BottomTabBar,{current:'Нүүр'})));
+</script>
+</body>
+</html>

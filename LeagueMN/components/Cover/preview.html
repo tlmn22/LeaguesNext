@@ -1,0 +1,53 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 288px; background: var(--bg); overflow: hidden; }
+  .cv { position: relative; width: 960px; height: 288px; }
+  .cv svg { position: absolute; inset: 0; }
+  .brand { fill: var(--accent); }
+  .ink { fill: var(--text); }
+  .tint { fill: var(--scheduled); }
+  .solid { fill: var(--live); }
+  .sunk { fill: var(--sunken); }
+  .seam { fill: none; stroke: var(--bg); stroke-width: 6px; stroke-linecap: round; }
+  .court { fill: none; stroke: var(--accent); stroke-width: 4px; }
+  .r-lg { rx: var(--radius-xl); }
+  .r-md { rx: var(--radius-md); }
+  .txt { position: absolute; left: 40px; bottom: 40px; max-width: 440px; }
+  .name { font: 600 76px/0.92 var(--font-display); color: var(--text); letter-spacing: -0.01em; }
+  .name em { font-style: normal; color: var(--accent); }
+  .name i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); margin-left: 6px; }
+  .tag { margin-top: 12px; font: 400 14px/20px var(--font-sans); color: var(--text-secondary); }
+</style>
+</head>
+<body>
+<div class="cv">
+  <svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+    <!--
+      blocks: accent 224×224 radius-xl · text (ink) 216×152 bleeding top/right · scheduled 112×152 radius-md · live disc 64 · sunken slab under the ball
+      arrangement: one big orange slab with satellites, ink bleeding off the top-right edge, tint bleeding off the bottom
+      pattern: literal motif — basketball seams cut out of the brand block in bg, plus one three-point arc in brand on the ink block; the system is a basketball league; arc in accent
+      scales: space-4 (16) gaps, space-12 (48) pitch, radius-xl 16, radius-md 12, seam = 6px
+    -->
+    <rect class="sunk r-lg" x="496" y="200" width="248" height="72"/>
+    <rect class="brand r-lg" x="520" y="16" width="224" height="224"/>
+    <g>
+      <line class="seam" x1="632" y1="16" x2="632" y2="240"/>
+      <line class="seam" x1="520" y1="128" x2="744" y2="128"/>
+      <path class="seam" d="M556 34 C 600 80, 600 176, 556 222"/>
+      <path class="seam" d="M708 34 C 664 80, 664 176, 708 222"/>
+    </g>
+    <rect class="ink r-lg" x="760" y="-16" width="216" height="152"/>
+    <path class="court" d="M800 -16 A 104 104 0 0 0 960 120"/>
+    <rect class="tint r-md" x="760" y="152" width="112" height="152"/>
+    <circle class="solid" cx="920" cy="200" r="32"/>
+  </svg>
+  <div class="txt">
+    <div class="name">League<em>MN</em><i></i></div>
+    <div class="tag">Оноо, хуваарь, хүснэгт, мэдээ — нэг дороос.</div>
+  </div>
+</div>
+</body>
+</html>

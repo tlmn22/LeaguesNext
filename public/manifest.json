@@ -1,0 +1,18 @@
+{
+  "name": "LeagueMN — Монголын Баскетболын Лигүүд",
+  "short_name": "LeagueMN",
+  "description": "Монголын баскетболын лигүүдийн тоглолт, хүснэгт, тоглогчийн статистик нэг дороос.",
+  "start_url": "/?pwa=1",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#f3f5fe",
+  "theme_color": "#E8601C",
+  "orientation": "portrait-primary",
+  "lang": "mn",
+  "dir": "ltr",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
