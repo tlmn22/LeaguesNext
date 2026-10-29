@@ -2,6 +2,7 @@ import 'server-only';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+import { MIME, objectKey, putObject, removeObject, storageEnabled } from './storage';
 
 /** uploads/ хавтасны бодит зам (DB-д "uploads/<dir>/<file>" гэж хадгалагдана) */
 export function uploadRoot(): string {
@@ -42,6 +43,11 @@ export async function saveImage(file: FormDataEntryValue | null, dir: 'leagues' 
   if (!looksLikeImage(buf)) throw new UploadError('Файл зураг биш байна.');
 
   const name = `${prefix}_${stamp()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+  // Supabase Storage тохируулсан бол (Vercel) bucket-д, үгүй бол локал дискэд
+  if (storageEnabled()) {
+    await putObject(`${dir}/${name}`, buf, MIME[ext]);
+    return `uploads/${dir}/${name}`;
+  }
   const absDir = path.join(uploadRoot(), dir);
   await fs.mkdir(absDir, { recursive: true });
   await fs.writeFile(path.join(absDir, name), buf);
@@ -51,7 +57,8 @@ export async function saveImage(file: FormDataEntryValue | null, dir: 'leagues' 
 /** Хуучин файлыг устгана (алдаа гарвал чимээгүй алгасна) */
 export async function deleteUpload(rel: string | null | undefined): Promise<void> {
   if (!rel) return;
-  const clean = String(rel).replace(/^\/+/, '').replace(/^uploads\//, '');
+  const clean = objectKey(rel);
+  if (storageEnabled()) return removeObject(clean);
   const abs = path.resolve(uploadRoot(), clean);
   if (!abs.startsWith(uploadRoot() + path.sep)) return;
   await fs.unlink(abs).catch(() => {});

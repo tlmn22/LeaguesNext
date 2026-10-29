@@ -8,7 +8,7 @@ Next.js 15 App Router, React 19, TypeScript, Tailwind CSS 4. PostgreSQL рүү �
 
 Node.js 20+ ашиглана. `npm install` ажиллуулж `.env.example`-ийг `.env.local` болгон хуулна (байгаа `.env.local` файлыг дарж болохгүй).
 
-Supabase → Connect → Session pooler → URI-г `.env.local` дахь `DATABASE_URL` талбарт оруулна. `[YOUR-PASSWORD]`-ийг database password-аар солино. Нууц үг доторх `@`, `#`, `%`, `/` зэрэг тэмдэгтийг URL encode хийнэ. `anon` болон `service_role` API key ашиглахгүй.
+Supabase → Connect → Session pooler → URI-г `.env.local` дахь `DATABASE_URL` талбарт оруулна. `[YOUR-PASSWORD]`-ийг database password-аар солино. Нууц үг доторх `@`, `#`, `%`, `/` зэрэг тэмдэгтийг URL encode хийнэ. `anon` key ашиглахгүй.
 
 ```dotenv
 DATABASE_URL="postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres"
@@ -18,6 +18,18 @@ DATABASE_POOL_MAX=5
 Гадаад DB холболт TLS сертификатыг шалгана. Сертификатын алдаа гарвал Supabase-аас CA certificate татаж `DATABASE_SSL_CA_FILE`-д замыг заана. TLS шалгалтыг унтраахгүй.
 
 `SESSION_SECRET` (32+ тэмдэгт), `UPLOAD_DIR=../uploads`, `SITE_URL` тохиргоонууд хэвээр ашиглагдана. Хуучин `DB_HOST`, `DB_USER` зэрэг MySQL тохиргоог Next код ашиглахгүй.
+
+## Зураг (Supabase Storage)
+
+Vercel-ийн файлын систем зөвхөн уншигдах тул `SUPABASE_URL` болон `SUPABASE_SERVICE_ROLE_KEY` тохируулсан орчинд upload хийсэн зураг `uploads` нэртэй нийтийн bucket-д хадгалагдана. DB-д зам нь `uploads/<dir>/<file>` хэвээр; `/uploads/...` route нь Storage-ийн нийтийн URL руу шилжүүлнэ. Эдгээрийг тохируулаагүй бол локал `UPLOAD_DIR` ашиглана.
+
+Одоо байгаа зургийг хуулах (bucket-ийг өөрөө үүсгэнэ, давтан ажиллуулж болно):
+
+```bash
+npm run storage:upload
+```
+
+Vercel дээр serverless функц олон холболт нээдэг тул `DATABASE_URL`-д Transaction pooler (порт 6543), `DATABASE_POOL_MAX=1` ашиглана.
 
 ## MySQL dump → Supabase
 
