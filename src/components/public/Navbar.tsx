@@ -11,8 +11,6 @@ export const PUBLIC_NAV = [
   { href: '/news', label: 'Мэдээ', short: 'Мэдээ', icon: 'newspaper' },
   { href: '/schedule', label: 'Тоглолтууд', short: 'Тоглолт', icon: 'sports_basketball' },
   { href: '/leagues', label: 'Лигүүд', short: 'Лигүүд', icon: 'emoji_events' },
-  { href: '/about', label: 'Бидний тухай', short: 'Тухай', icon: 'info' },
-  { href: '/contact', label: 'Холбоо барих', short: 'Холбоо', icon: 'call' },
 ];
 
 export function isActive(pathname: string, href: string) {

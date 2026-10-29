@@ -239,7 +239,7 @@ html.dark {
   .lmn-empty.is-compact .lmn-empty-ic .mi { font-size: 22px; }
 
   /* ---------- bottom tab bar (mobile) ---------- */
-  .lmn-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: none; grid-template-columns: repeat(5, 1fr); height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: color-mix(in srgb, var(--lmn-card) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--lmn-border); }
+  .lmn-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: none; grid-template-columns: repeat(4, 1fr); height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: color-mix(in srgb, var(--lmn-card) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--lmn-border); }
   .lmn-tabbar a { display: grid; place-items: center; align-content: center; gap: 2px; color: var(--lmn-text-secondary); font: 700 11px/14px var(--lmn-sans); position: relative; }
   .lmn-tabbar .mi { font-size: 24px; }
   .lmn-tabbar a[aria-current="page"] { color: var(--lmn-accent-text); }

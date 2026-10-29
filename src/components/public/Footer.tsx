@@ -4,7 +4,7 @@ import { Logo } from './lmn';
 
 const COLS: [string, [string, string][]][] = [
   ['Платформ', [['Мэдээ', '/news'], ['Тоглолтууд', '/schedule'], ['Лигүүд', '/leagues']]],
-  ['Мэдээлэл', [['Бидний тухай', '/about'], ['Холбоо барих', '/contact'], ['Нэвтрэх', '/admin']]],
+  ['Бусад', [['Нэвтрэх', '/admin']]],
 ];
 
 export default function Footer() {

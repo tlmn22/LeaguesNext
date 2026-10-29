@@ -32,6 +32,7 @@ export default function ImportClient({ stid, back }: { stid: number; back: strin
               </a>
             </li>
             <li>Овог, Нэр, Дугаар, Байр баганыг бөглөнө (байр: PG, SG, SF, PF, C)</li>
+            <li>Өндөр (см, жишээ 185) болон Жин (кг, жишээ 80) — заавал биш; хоосон бол одоо байгаа утга хэвээр үлдэнэ</li>
             <li>Файлаа сонгоод &quot;Урьдчилан харах&quot; дарна</li>
           </ol>
         </div>
@@ -82,6 +83,8 @@ export default function ImportClient({ stid, back }: { stid: number; back: strin
                   <th className="text-left font-medium py-2.5 px-3">Овог Нэр</th>
                   <th className="text-center font-medium py-2.5 px-3">Дугаар</th>
                   <th className="text-center font-medium py-2.5 px-3">Байр</th>
+                  <th className="text-center font-medium py-2.5 px-3">Өндөр</th>
+                  <th className="text-center font-medium py-2.5 px-3">Жин</th>
                   <th className="text-left font-medium py-2.5 px-3">Төлөв</th>
                   <th className="text-left font-medium py-2.5 px-3">Тэмдэглэл</th>
                 </tr>
@@ -95,6 +98,8 @@ export default function ImportClient({ stid, back }: { stid: number; back: strin
                     </td>
                     <td className="py-2.5 px-3 text-center font-display text-base">{r.jersey ?? '—'}</td>
                     <td className="py-2.5 px-3 text-center">{r.pos ?? '—'}</td>
+                    <td className="py-2.5 px-3 text-center tabular-nums whitespace-nowrap">{r.height ? `${r.height} см` : '—'}</td>
+                    <td className="py-2.5 px-3 text-center tabular-nums whitespace-nowrap">{r.weight ? `${r.weight} кг` : '—'}</td>
                     <td className="py-2.5 px-3">
                       <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${BADGE[r.status][0]}`}>
                         {BADGE[r.status][1]}

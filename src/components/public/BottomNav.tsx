@@ -8,7 +8,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   return (
     <nav className="lmn-tabbar" aria-label="Доод цэс">
-      {PUBLIC_NAV.filter((n) => n.href !== '/about').map((n) => (
+      {PUBLIC_NAV.map((n) => (
         <Link key={n.href} href={n.href} aria-current={isActive(pathname, n.href) ? 'page' : undefined}>
           <span className="mi" aria-hidden="true">{n.icon}</span>
           {n.short}

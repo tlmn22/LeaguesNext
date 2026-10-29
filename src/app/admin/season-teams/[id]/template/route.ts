@@ -15,8 +15,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!st) return new Response('Баг олдсонгүй', { status: 404 });
   if (!canManageLeague(user, st.league_id)) return new Response('Эрхгүй', { status: 403 });
 
-  const roster = await query<{ last_name: string; first_name: string; jersey_no: string | null; position: string | null }>(
-    `SELECT p.last_name, p.first_name, tsr.jersey_no, tsr.position
+  const roster = await query<{ last_name: string; first_name: string; jersey_no: string | null; position: string | null; height_cm: number | null; weight_kg: number | null }>(
+    `SELECT p.last_name, p.first_name, tsr.jersey_no, tsr.position, p.height_cm, p.weight_kg
      FROM team_season_roster tsr JOIN players p ON p.id=tsr.player_id
      WHERE tsr.season_team_id=? AND tsr.status='active'
      ORDER BY (tsr.jersey_no IS NULL OR tsr.jersey_no=''), CASE WHEN tsr.jersey_no ~ '^[0-9]+$' THEN tsr.jersey_no::integer ELSE 0 END, p.last_name`,
@@ -31,13 +31,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     { header: 'Нэр', width: 22 },
     { header: 'Дугаар', width: 9 },
     { header: 'Байр', width: 9 },
+    { header: 'Өндөр (см)', width: 12 },
+    { header: 'Жин (кг)', width: 10 },
     { header: 'Тэмдэглэл', width: 30 },
   ];
   ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
   ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8601C' } };
-  ws.addRow(['', '(Байр: PG, SG, SF, PF, C — заавал биш)', '', '', '', '']).font = { italic: true, color: { argb: 'FF888888' } };
+  ws.addRow(['', '(Байр: PG, SG, SF, PF, C · Өндөр см-ээр (185), жин кг-аар (80) — заавал биш)', '', '', '', '', '', '']).font = { italic: true, color: { argb: 'FF888888' } };
 
-  const rows = roster.length ? roster.map((r, i) => [i + 1, r.last_name, r.first_name, r.jersey_no ?? '', r.position ?? '', '']) : [[1, '', '', '', '', ''], [2, '', '', '', '', ''], [3, '', '', '', '', '']];
+  const rows = roster.length
+    ? roster.map((r, i) => [i + 1, r.last_name, r.first_name, r.jersey_no ?? '', r.position ?? '', r.height_cm || '', r.weight_kg || '', ''])
+    : [1, 2, 3].map((n) => [n, '', '', '', '', '', '', '']);
   for (const r of rows) ws.addRow(r);
 
   const buf = await wb.xlsx.writeBuffer();

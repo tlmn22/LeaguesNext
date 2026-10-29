@@ -7,11 +7,43 @@ import { query, queryOne, transaction } from '@/lib/db';
 import { canSeasonTeam } from '@/lib/scope';
 import { setFlash } from '@/lib/flash';
 
-export type ImportRow = { last: string; first: string; jersey: string | null; pos: string | null; note: string; status: 'new' | 'add' | 'exists' | 'conflict'; conflictTeam?: string };
+export type ImportRow = { last: string; first: string; jersey: string | null; pos: string | null; height: number | null; weight: number | null; note: string; status: 'new' | 'add' | 'exists' | 'conflict'; conflictTeam?: string };
 export type PreviewResult = { ok: true; rows: ImportRow[] } | { ok: false; error: string };
 
 const SKIP = ['овог', 'овог *', 'last', 'lastname', 'last name', 'багийн нэр', 'нэр *', 'нэр'];
 const VALID_POS = ['PG', 'SG', 'SF', 'PF', 'C', 'G', 'F'];
+
+// Баганыг толгой мөрийн нэрээр танина — өндөр/жингүй хуучин template ч зөв уншигдана
+type ColMap = Record<'last' | 'first' | 'jersey' | 'pos' | 'height' | 'weight' | 'note', number>;
+const DEFAULT_COLS: ColMap = { last: 1, first: 2, jersey: 3, pos: 4, height: 5, weight: 6, note: 7 };
+
+function detectCols(raw: string[][]): ColMap {
+  for (const r of raw.slice(0, 5)) {
+    const h = r.map((c) => c.toLowerCase().trim());
+    const at = (...names: string[]) => h.findIndex((c) => names.some((n) => c.startsWith(n)));
+    const last = at('овог', 'last');
+    if (last < 0) continue;
+    return { last, first: at('нэр', 'first'), jersey: at('дугаар', 'jersey'), pos: at('байр', 'pos'), height: at('өндөр', 'height'), weight: at('жин', 'weight'), note: at('тэмдэглэл', 'note') };
+  }
+  return DEFAULT_COLS;
+}
+
+const num = (v: string) => parseFloat(v.replace(',', '.').replace(/[^\d.]/g, ''));
+
+/** "185", "185 см", "1.85" (метр) → 185; 120–240 см-ээс гадуур бол null */
+function parseHeight(v: string): number | null {
+  let n = num(v);
+  if (!Number.isFinite(n)) return null;
+  if (n > 0 && n < 3) n *= 100;
+  n = Math.round(n);
+  return n >= 120 && n <= 240 ? n : null;
+}
+
+/** "80", "80кг" → 80; 30–200 кг-аас гадуур бол null */
+function parseWeight(v: string): number | null {
+  const n = Math.round(num(v));
+  return Number.isFinite(n) && n >= 30 && n <= 200 ? n : null;
+}
 
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
@@ -43,7 +75,7 @@ async function parseXlsx(buf: ArrayBuffer): Promise<string[][]> {
   const out: string[][] = [];
   ws.eachRow({ includeEmpty: false }, (r) => {
     const cells: string[] = [];
-    for (let c = 1; c <= Math.max(6, r.cellCount); c++) {
+    for (let c = 1; c <= Math.max(8, r.cellCount); c++) {
       const v = r.getCell(c).value as unknown;
       let s = '';
       if (v == null) s = '';
@@ -78,19 +110,28 @@ export async function previewRoster(stid: number, fd: FormData): Promise<Preview
   const st = await queryOne<{ season_id: number }>('SELECT season_id FROM season_teams WHERE id=?', [stid]);
   if (!st) return { ok: false, error: 'Баг олдсонгүй.' };
 
+  const col = detectCols(raw);
+  const cell = (r: string[], i: number) => (i >= 0 ? (r[i] ?? '').trim() : '');
   const rows: ImportRow[] = [];
   const seen = new Set<string>();
   for (const r of raw) {
-    const last = (r[1] ?? '').trim();
-    const first = (r[2] ?? '').trim();
+    const last = cell(r, col.last);
+    const first = cell(r, col.first);
     if (!last || !first || SKIP.includes(last.toLowerCase()) || last.startsWith('(')) continue;
     const key = `${last.toLowerCase()}|${first.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const j = (r[3] ?? '').trim();
+    const j = cell(r, col.jersey);
     const jersey = /^\d{1,3}$/.test(j) && Number(j) <= 99 ? String(Number(j)) : null;
-    const pos = (r[4] ?? '').trim().toUpperCase();
-    rows.push({ last, first, jersey, pos: VALID_POS.includes(pos) ? pos : null, note: (r[5] ?? '').trim(), status: 'new' });
+    const pos = cell(r, col.pos).toUpperCase();
+    const hRaw = cell(r, col.height);
+    const wRaw = cell(r, col.weight);
+    const height = hRaw ? parseHeight(hRaw) : null;
+    const weight = wRaw ? parseWeight(wRaw) : null;
+    // Буруу утгыг тэмдэглэлд харуулна (импортод орохгүй)
+    const warn = [hRaw && height === null && `Өндөр буруу: ${hRaw}`, wRaw && weight === null && `Жин буруу: ${wRaw}`].filter(Boolean).join(' · ');
+    const note = [cell(r, col.note), warn].filter(Boolean).join(' · ');
+    rows.push({ last, first, jersey, pos: VALID_POS.includes(pos) ? pos : null, height, weight, note, status: 'new' });
   }
   if (!rows.length) return { ok: false, error: 'Тоглогч олдсонгүй. Овог, Нэр баганыг бөглөнө үү.' };
 
@@ -138,6 +179,9 @@ export async function importRoster(stid: number, rows: ImportRow[]): Promise<{ o
       }
       const jersey = p.jersey && /^\d{1,2}$/.test(p.jersey) ? p.jersey : null;
       const pos = p.pos && VALID_POS.includes(p.pos) ? p.pos : null;
+      // Client-ээс ирсэн утгыг дахин шалгана
+      const height = p.height != null ? parseHeight(String(p.height)) : null;
+      const weight = p.weight != null ? parseWeight(String(p.weight)) : null;
       let pid = await tx.scalar<number>(
         `SELECT pl.id FROM players pl LEFT JOIN team_season_roster tsr ON tsr.player_id=pl.id AND tsr.season_team_id=?
          WHERE pl.last_name=? AND pl.first_name=? ORDER BY tsr.id IS NULL, pl.id LIMIT 1`,
@@ -156,7 +200,10 @@ export async function importRoster(stid: number, rows: ImportRow[]): Promise<{ o
         }
       }
       if (!pid) {
-        pid = (await tx.execute('INSERT INTO players (last_name, first_name, created_by_user_id) VALUES (?,?,?)', [last, first, user.id])).insertId;
+        pid = (await tx.execute('INSERT INTO players (last_name, first_name, height_cm, weight_kg, created_by_user_id) VALUES (?,?,?,?,?)', [last, first, height, weight, user.id])).insertId;
+      } else if (height !== null || weight !== null) {
+        // Хоосон нүд одоо байгаа утгыг арилгахгүй
+        await tx.execute('UPDATE players SET height_cm=COALESCE(?::smallint, height_cm), weight_kg=COALESCE(?::smallint, weight_kg), updated_by_user_id=?, updated_at=app_now() WHERE id=?', [height, weight, user.id, pid]);
       }
       const rid = await tx.scalar<number>('SELECT id FROM team_season_roster WHERE season_team_id=? AND player_id=?', [stid, pid]);
       if (rid) {
