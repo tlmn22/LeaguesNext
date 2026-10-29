@@ -48,7 +48,7 @@ export const LEAGUE_TABS = [
   { key: 'home', icon: 'home', label: 'Тойм' },
   { key: 'matches', icon: 'sports_basketball', label: 'Хуваарь' },
   { key: 'standings', icon: 'format_list_numbered', label: 'Хүснэгт' },
-  { key: 'stats', icon: 'bar_chart', label: 'Тэргүүлэгчид' },
+  { key: 'stats', icon: 'bar_chart', label: 'Статистик' },
   { key: 'teams', icon: 'groups', label: 'Багууд' },
   { key: 'players', icon: 'person', label: 'Тоглогчид' },
   { key: 'news', icon: 'newspaper', label: 'Мэдээ' },
@@ -126,7 +126,7 @@ export const MATCH_ROW_SQL = `
   JOIN teams at2 ON at2.id=ast.team_id`;
 
 export type LeaderRow = {
-  pid: number; first_name: string; last_name: string; photo_path: string | null; team_name: string;
+  pid: number; first_name: string; last_name: string; photo_path: string | null; team_name: string; team_logo: string | null; team_color: string | null;
   position: string | null; jersey_no: string | null; gp: number; val: number; total: number;
 };
 
@@ -144,7 +144,7 @@ export async function getLeaders(sid: number, key: StatKey, limit: number) {
   const col = STAT_COLS[key][1]; // whitelist-ээс — SQL injection боломжгүй
   return query<LeaderRow>(
     `SELECT p.id AS pid, p.first_name, p.last_name, p.photo_path,
-            MAX(t.name) AS team_name,
+            MAX(t.name) AS team_name, MAX(t.logo_path) AS team_logo, MAX(t.primary_color) AS team_color,
             (SELECT MAX(tsr.position) FROM team_season_roster tsr JOIN season_teams st ON st.id=tsr.season_team_id
               WHERE tsr.player_id=p.id AND st.season_id=?) AS position,
             (SELECT MAX(tsr.jersey_no) FROM team_season_roster tsr JOIN season_teams st ON st.id=tsr.season_team_id

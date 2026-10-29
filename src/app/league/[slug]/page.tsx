@@ -1,13 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { query, queryOne } from '@/lib/db';
-import { MATCH_ROW_SQL, getLeaders, getLeagueCtx, getStandings, lgPath, teamPath, type MatchRow } from '@/lib/league';
+import { query } from '@/lib/db';
+import { MATCH_ROW_SQL, getLeaders, getLeagueCtx, getStandings, lgPath, teamPath, type MatchRow, type StatKey } from '@/lib/league';
 import { fileUrl, fmtDate, initials, tc } from '@/lib/format';
 import { seasonNews, toCard } from '@/lib/news';
 import LeagueShell from '@/components/league/LeagueShell';
+import LeaderCards, { type LeaderCard } from '@/components/league/LeaderCards';
 import { NewsCard, NewsFeatured, NewsList } from '@/components/public/lmn';
-import { TierStars } from '@/components/ui';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,97 +18,41 @@ export async function generateMetadata({ params, searchParams }: P): Promise<Met
   return { title: `${ctx.lg.name}${ctx.season ? ' — ' + ctx.season.name : ''}`, description: ctx.lg.description ?? undefined };
 }
 
+// Тойм дээрх тэргүүлэгчдийн ангилал: [түлхүүр, нэр, нэгж]
+const LEADER_CATS: [StatKey, string, string][] = [
+  ['pts', 'Оноо', 'PPG'],
+  ['ast', 'Дамжуулалт', 'APG'],
+  ['reb', 'Самбар', 'RPG'],
+  ['blk', 'Хаалт', 'BPG'],
+];
+
 export default async function LeagueHome({ params, searchParams }: P) {
   const ctx = await getLeagueCtx((await params).slug, (await searchParams).s);
-  const { lg, seasons, sid, season, ac, slug } = ctx;
+  const { seasons, sid, ac, slug } = ctx;
 
-  const [recent, next, { zones, hasZones }, leaders, news] = await Promise.all([
+  const [recent, { zones, hasZones }, leaders, news] = await Promise.all([
     query<MatchRow>(`${MATCH_ROW_SQL} WHERE m.season_id=? AND m.status='finished' ORDER BY m.match_datetime DESC LIMIT 5`, [sid]),
-    queryOne<MatchRow>(`${MATCH_ROW_SQL} WHERE m.season_id=? AND m.status='scheduled' ORDER BY m.match_datetime ASC LIMIT 1`, [sid]),
     getStandings(sid),
-    getLeaders(sid, 'pts', 3),
+    Promise.all(LEADER_CATS.map(([key]) => getLeaders(sid, key, 5))),
     seasonNews(sid, 6).then((r) => r.map(toCard)),
   ]);
 
+  const leaderCards: LeaderCard[] = LEADER_CATS.map(([key, label, unit], i) => ({
+    key, label, unit, href: lgPath(slug, sid, 'stats', `&st=${key}`), rows: leaders[i],
+  })).filter((c) => c.rows.length > 0);
+
   return (
     <LeagueShell ctx={ctx} active="home">
-      <header className="max-w-7xl mx-auto px-4 py-10 md:py-14 flex flex-col lg:flex-row items-start lg:items-center gap-10 border-b border-line">
-        <div className="flex-1 space-y-4">
-          {season && (
-            <div className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest" style={{ color: ac }}>
-              {season.status === 'active' ? (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full live-dot" style={{ background: ac }} /> Явагдаж байна
-                </>
-              ) : season.status === 'registration' ? (
-                <>
-                  <span className="material-icons-round text-sm">how_to_reg</span> Бүртгэл нээлттэй
-                </>
-              ) : (
-                <>
-                  <span className="material-icons-round text-sm">done_all</span> Дууссан
-                </>
-              )}
-            </div>
-          )}
-
-          <h2 className="text-3xl md:text-4xl font-display leading-tight uppercase">{season?.name ?? ''}</h2>
-
-          {lg.description && <p className="text-ink2 text-sm md:text-base max-w-lg leading-relaxed">{lg.description}</p>}
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <TierStars tier={Number(lg.tier ?? 3)} />
-            <span className="text-xs text-muted uppercase">Tier {lg.tier ?? 3}</span>
-            {season?.start_date && (
-              <>
-                <span className="text-line2">·</span>
-                <span className="text-xs text-muted">
-                  {fmtDate(season.start_date, 'Y.m.d')} — {fmtDate(season.end_date, 'Y.m.d')}
-                </span>
-              </>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-3 pt-1">
-            <Link href={lgPath(slug, sid, 'standings')} className="font-medium py-2.5 px-5 rounded-lg text-sm text-white transition-opacity hover:opacity-90 flex items-center gap-2" style={{ background: ac }}>
-              <span className="material-icons-round text-base">format_list_numbered</span> Хүснэгт
-            </Link>
-            <Link href={lgPath(slug, sid, 'matches')} className="font-medium py-2.5 px-5 rounded-lg text-sm border border-line2 text-ink2 hover:border-primary hover:text-primary transition-colors flex items-center gap-2">
-              <span className="material-icons-round text-base">calendar_month</span> Тоглолтууд
-            </Link>
-          </div>
-        </div>
-
-        {next && (
-          <Link href={`/match/${next.id}`} className="block w-full lg:w-72 shrink-0 border border-line rounded-lg p-5 hover:border-primary transition-colors">
-            <p className="text-muted uppercase text-[10px] font-medium tracking-widest mb-4">Дараагийн тоглолт</p>
-            <div className="flex items-center justify-between gap-2">
-              {[
-                [next.ht, next.hl],
-                null,
-                [next.at, next.al],
-              ].map((t, i) =>
-                t ? (
-                  <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                    <span className="w-12 h-12 rounded-lg bg-line grid place-items-center font-display text-lg overflow-hidden">
-                      {t[1] ? <img src={fileUrl(t[1])} alt="" className="w-full h-full object-cover" /> : initials(t[0])}
-                    </span>
-                    <span className="text-xs font-medium text-center leading-tight">{tc(t[0])}</span>
-                  </div>
-                ) : (
-                  <div key={i} className="text-center shrink-0">
-                    <div className="font-display text-2xl" style={{ color: ac }}>VS</div>
-                    <div className="text-xs text-muted mt-1">{fmtDate(next.match_datetime, 'H:i')}</div>
-                  </div>
-                ),
-              )}
-            </div>
-            <div className="text-center mt-4 pt-3 border-t border-line text-xs text-muted">{fmtDate(next.match_datetime, 'Y.m.d (D)')}</div>
-          </Link>
-        )}
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 py-10">
+        {leaderCards.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium text-[13px] uppercase tracking-[0.14em] text-muted">Тэргүүлэгчид</h3>
+              <Link href={lgPath(slug, sid, 'stats')} className="text-[13px] font-medium hover:opacity-80" style={{ color: ac }}>Бүгд →</Link>
+            </div>
+            <LeaderCards cards={leaderCards} sid={sid} ac={ac} />
+          </section>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-8">
             {news.length > 0 && (
@@ -211,36 +155,6 @@ export default async function LeagueHome({ params, searchParams }: P) {
                 </div>
               ))}
             </div>
-
-            {leaders.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-medium text-[13px] uppercase tracking-[0.14em] text-muted">Тэргүүлэгчид</h3>
-                  <Link href={lgPath(slug, sid, 'stats')} className="text-[12px] font-medium hover:opacity-80" style={{ color: ac }}>Бүгд →</Link>
-                </div>
-                <div>
-                  {leaders.map((p, i) => (
-                    <Link key={p.pid} href={`/player/${p.pid}?s=${sid}`} className="flex items-center gap-3 py-3 border-t border-line hover:bg-primary/[0.04] transition-colors">
-                      <span className="font-display text-base text-muted w-3.5 shrink-0">{i + 1}</span>
-                      <span className="w-9 h-9 rounded-full bg-line grid place-items-center font-display text-sm shrink-0 overflow-hidden">
-                        {p.photo_path ? <img src={fileUrl(p.photo_path)} alt="" className="w-full h-full object-cover" /> : initials(tc(p.last_name), 1)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{tc(p.last_name)} {tc(p.first_name)}</div>
-                        <div className="text-[11px] text-muted truncate">
-                          {tc(p.team_name)}
-                          {p.position ? ` · ${p.position}` : ''}
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-display text-xl leading-none" style={{ color: ac }}>{p.val}</div>
-                        <div className="text-[9px] text-muted uppercase">PPG</div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {seasons.length > 1 && (
               <div>

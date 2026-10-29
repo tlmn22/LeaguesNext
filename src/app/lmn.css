@@ -346,4 +346,36 @@ html.dark {
     .lg-tabs a { height: 48px; font-size: 14px; padding: 0 var(--lmn-space-3); }
     .lg-tabs a[aria-current="page"]::after { left: var(--lmn-space-3); right: var(--lmn-space-3); }
   }
+
+  /* ---------- улирлын спонсорын тууз (багтахгүй үед л гүйнэ) ---------- */
+  .lg-sponsors { position: relative; overflow: hidden; background: #000; color: #fff; padding: 28px 0 32px; margin-top: 64px; }
+  .lg-sponsors.is-moving { -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+  .lg-sp-track { display: flex; justify-content: center; }
+  .lg-sponsors.is-moving .lg-sp-track { justify-content: flex-start; width: max-content; animation: lg-marquee var(--sp-dur, 30s) linear infinite; }
+  .lg-sponsors.is-moving:hover .lg-sp-track, .lg-sponsors.is-moving:focus-within .lg-sp-track { animation-play-state: paused; }
+  .lg-sp-set { flex: none; display: flex; gap: 72px; padding: 0 36px; }
+  .lg-sp-group { flex: none; display: grid; align-content: start; gap: 18px; }
+  .lg-sp-label { font: 800 11px/14px var(--lmn-sans); letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .5); }
+  .lg-sp-row { display: flex; align-items: center; gap: 48px; }
+  .lg-sp-logo { display: inline-flex; align-items: center; height: 48px; opacity: .85; transition: opacity .2s; }
+  .lg-sp-logo:hover { opacity: 1; }
+  .lg-sp-logo img { height: 100%; width: auto; max-width: 170px; object-fit: contain; }
+  .lg-sp-group.is-title .lg-sp-logo { height: 64px; }
+  .lg-sp-group.is-title .lg-sp-logo img { max-width: 200px; }
+  .lg-sp-name { font: 700 18px/1 var(--lmn-sans); white-space: nowrap; }
+  .lmn-site > .lg-sponsors + .lmn-footer { margin-top: 0; }
+  @keyframes lg-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .lg-sponsors.is-moving { -webkit-mask-image: none; mask-image: none; }
+    .lg-sponsors.is-moving .lg-sp-track { animation: none; width: auto; }
+    .lg-sp-set { flex-wrap: wrap; row-gap: 24px; justify-content: center; }
+    .lg-sp-set[aria-hidden] { display: none; }
+  }
+  @media (max-width: 899px) {
+    .lg-sponsors { padding: 20px 0 24px; margin-top: 48px; }
+    .lg-sp-set { gap: 48px; padding: 0 24px; }
+    .lg-sp-row { gap: 32px; }
+    .lg-sp-logo { height: 36px; }
+    .lg-sp-group.is-title .lg-sp-logo { height: 48px; }
+  }
 }

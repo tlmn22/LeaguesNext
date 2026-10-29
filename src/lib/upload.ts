@@ -34,7 +34,7 @@ export class UploadError extends Error {}
  * Зураг хадгалах. Файл сонгоогүй бол null буцаана.
  * @returns "uploads/<dir>/<prefix>_YYYYmmdd_HHMMSS_xxxxxxxx.ext"
  */
-export async function saveImage(file: FormDataEntryValue | null, dir: 'leagues' | 'teams' | 'players' | 'news', prefix: string): Promise<string | null> {
+export async function saveImage(file: FormDataEntryValue | null, dir: 'leagues' | 'teams' | 'players' | 'news' | 'sponsors', prefix: string): Promise<string | null> {
   if (!file || typeof file === 'string' || file.size === 0) return null;
   const ext = (file.name.split('.').pop() ?? '').toLowerCase();
   if (!IMAGE_EXT.includes(ext)) throw new UploadError('Зөвхөн JPG, PNG, WEBP, GIF формат зөвшөөрнө.');

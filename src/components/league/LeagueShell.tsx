@@ -7,16 +7,19 @@ import Navbar from '../public/Navbar';
 import Footer from '../public/Footer';
 import BottomNav from '../public/BottomNav';
 import { NavSelect } from '../public/NavSelect';
+import { seasonSponsors } from '@/lib/sponsors';
+import SponsorStrip from './SponsorStrip';
 
 const GENDERS = [
   ['M', 'Эрэгтэй'],
   ['F', 'Эмэгтэй'],
 ] as const;
 
-export default function LeagueShell({ ctx, active, children }: { ctx: LeagueCtx; active: LeagueTab; children: ReactNode }) {
+export default async function LeagueShell({ ctx, active, children }: { ctx: LeagueCtx; active: LeagueTab; children: ReactNode }) {
   const { lg, seasons, sid, season, ac, slug } = ctx;
   const logo = lg.logo ? fileUrl(lg.logo) : null;
   const light = isLightColor(ac);
+  const sponsors = season ? await seasonSponsors(season.id) : [];
 
   // Лиг эрэгтэй, эмэгтэй хоёр улиралтай бол хүйсээр шүүнэ
   const gender = season ? seasonGender(season.name) : null;
@@ -97,6 +100,7 @@ export default function LeagueShell({ ctx, active, children }: { ctx: LeagueCtx;
 
       {children}
 
+      <SponsorStrip sponsors={sponsors} />
       <Footer />
       <BottomNav />
     </div>

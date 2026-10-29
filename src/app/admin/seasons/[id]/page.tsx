@@ -8,6 +8,8 @@ import { BTN, BTN_GHOST, BTN_SOLID, Crumbs, Empty, GENDER, ICON_BTN, ICON_BTN_DA
 import { ConfirmButton, Modal, SearchPick, Submit } from '@/components/admin/client';
 import { addSeasonTeam, removeSeasonTeam, updateZone } from '../actions';
 import MatchTable from '@/components/admin/MatchTable';
+import { seasonSponsors } from '@/lib/sponsors';
+import SponsorsTab from './SponsorsTab';
 
 export const metadata = { title: 'Улирал' };
 
@@ -17,7 +19,8 @@ export type M = { id: number; stage: string | null; match_datetime: string; aren
 export default async function SeasonView({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const user = await requireRole(['admin', 'commissioner']);
   const id = parseInt((await params).id, 10) || 0;
-  const tab = (await searchParams).tab === 'matches' ? 'matches' : 'teams';
+  const rawTab = (await searchParams).tab;
+  const tab = rawTab === 'matches' || rawTab === 'sponsors' ? rawTab : 'teams';
 
   const season = await queryOne<{ id: number; name: string; league_id: number; league_name: string; start_date: string | null; end_date: string | null; status: string }>(
     'SELECT s.id, s.name, s.league_id, s.start_date, s.end_date, s.status, l.name AS league_name FROM seasons s JOIN leagues l ON l.id=s.league_id WHERE s.id=?',
@@ -26,7 +29,7 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
   if (!season) notFound();
   if (!canManageLeague(user, season.league_id)) redirect('/admin/forbidden');
 
-  const [teams, available, matches] = await Promise.all([
+  const [teams, available, matches, sponsors] = await Promise.all([
     query<ST>(
       `SELECT st.id, st.team_id, st.zone, st.seed, t.name AS team_name, t.short_name, t.logo_path, t.gender,
               (SELECT COUNT(DISTINCT tsr.player_id) FROM team_season_roster tsr WHERE tsr.season_team_id=st.id AND tsr.status='active') AS player_count
@@ -50,6 +53,7 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
        WHERE m.season_id=? ORDER BY m.match_datetime DESC`,
       [id],
     ),
+    seasonSponsors(id),
   ]);
 
   const finished = matches.filter((m) => m.status === 'finished').length;
@@ -87,7 +91,7 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
       </div>
 
       <div className="border-b border-line mb-5 flex">
-        {([['teams', 'Багууд', 'groups'], ['matches', 'Тоглолтууд', 'sports_basketball']] as const).map(([k, l, ic]) => (
+        {([['teams', 'Багууд', 'groups'], ['matches', 'Тоглолтууд', 'sports_basketball'], ['sponsors', 'Спонсорууд', 'handshake']] as const).map(([k, l, ic]) => (
           <Link
             key={k}
             href={`/admin/seasons/${id}?tab=${k}`}
@@ -202,6 +206,8 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
             </div>
           )}
         </>
+      ) : tab === 'sponsors' ? (
+        <SponsorsTab seasonId={id} sponsors={sponsors} />
       ) : (
         <>
           <div className="flex items-center justify-between gap-3 mb-3">
