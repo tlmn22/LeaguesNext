@@ -5,7 +5,7 @@ import LeagueShell from '@/components/league/LeagueShell';
 import StatsTable from '@/components/league/StatsTable';
 
 export const dynamic = 'force-dynamic';
-type P = { params: Promise<{ slug: string }>; searchParams: Promise<{ s?: string; st?: string; view?: string }> };
+type P = { params: Promise<{ slug: string }>; searchParams: Promise<{ s?: string; st?: string; view?: string; mode?: string }> };
 
 // Хуучин ?st= холбоос (Тойм дээрх "Бүгдийг харах") → эрэмбэлэх багана
 const ST_SORT: Record<string, string> = { pts: 'ppg', reb: 'rpg', ast: 'apg', stl: 'spg', blk: 'bpg' };
@@ -26,13 +26,14 @@ export default async function LeagueStats({ params, searchParams }: P) {
       <main className="max-w-7xl mx-auto px-4 py-10">
         <div className="mb-6">
           <h2 className="font-display text-4xl uppercase">Статистик</h2>
-          {season && <p className="text-sm text-muted mt-1">{season.name} · тоглолт тутмын дундаж</p>}
+          {season && <p className="text-sm text-muted mt-1">{season.name}</p>}
         </div>
         <StatsTable
           players={players}
           teams={teams}
           initialView={sp.view === 'teams' ? 'teams' : 'players'}
           initialSort={ST_SORT[sp.st ?? ''] ?? 'ppg'}
+          initialMode={sp.mode === 'total' ? 'total' : 'avg'}
           ac={ac}
         />
       </main>

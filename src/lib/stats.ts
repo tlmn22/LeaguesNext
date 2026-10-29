@@ -3,8 +3,8 @@ import { query } from './db';
 import { fileUrl, tc } from './format';
 import { teamPath } from './league';
 
-/** Datatable-ийн нэг мөр — v: баганын түлхүүр → утга (null бол "-") */
-export type StatRow = { id: number; href: string; name: string; sub: string; photo: string | null; pos: string | null; v: Record<string, number | null> };
+/** Datatable-ийн нэг мөр — v: тоглолт тутмын дундаж, t: улирлын нийт (түлхүүр ижил; null бол "-") */
+export type StatRow = { id: number; href: string; name: string; sub: string; photo: string | null; pos: string | null; v: Record<string, number | null>; t: Record<string, number | null> };
 
 type Sums = {
   gp: number; secs: number; pts: number; fgm: number; fga: number; tpm: number; tpa: number; ftm: number; fta: number;
@@ -41,6 +41,21 @@ function perGame(s: Sums, minutes: boolean): Record<string, number | null> {
   };
 }
 
+/** Улирлын нийт — дундажтай ижил түлхүүрээр (ppg = нийт оноо гэх мэт) */
+function totals(s: Sums, minutes: boolean): Record<string, number | null> {
+  const n = (k: keyof Sums) => Number(s[k]);
+  return {
+    gp: n('gp'),
+    ...(minutes ? { min: Math.round(n('secs') / 60) } : {}),
+    ppg: n('pts'),
+    fgm: n('fgm'), fga: n('fga'), fgp: pct(n('fgm'), n('fga')),
+    tpm: n('tpm'), tpa: n('tpa'), tpp: pct(n('tpm'), n('tpa')),
+    ftm: n('ftm'), fta: n('fta'), ftp: pct(n('ftm'), n('fta')),
+    orpg: n('oreb'), drpg: n('dreb'), rpg: n('reb'),
+    apg: n('ast'), spg: n('stl'), bpg: n('blk'), tpg: n('tov'), pfpg: n('pf'),
+  };
+}
+
 /** Улирлын бүх тоглогчийн дундаж статистик (зөвхөн тоглосон тоглолтууд — DNP тооцохгүй) */
 export async function playerStats(sid: number): Promise<StatRow[]> {
   const rows = await query<Sums & { id: number; first_name: string; last_name: string; photo_path: string | null; team: string; pos: string | null }>(
@@ -64,6 +79,7 @@ export async function playerStats(sid: number): Promise<StatRow[]> {
     photo: r.photo_path ? fileUrl(r.photo_path) : null,
     pos: r.pos,
     v: perGame(r, true),
+    t: totals(r, true),
   }));
 }
 
@@ -103,6 +119,7 @@ export async function teamStats(sid: number, slug: string): Promise<StatRow[]> {
       photo: t.logo_path ? fileUrl(t.logo_path) : null,
       pos: null,
       v: { ...(s ? perGame(s, false) : { gp: 0 }), w: Number(rec?.w ?? 0), l: Number(rec?.l ?? 0) },
+      t: { ...(s ? totals(s, false) : { gp: 0 }), w: Number(rec?.w ?? 0), l: Number(rec?.l ?? 0) },
     };
   });
 }

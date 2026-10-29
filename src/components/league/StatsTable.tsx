@@ -5,35 +5,37 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { StatRow } from '@/lib/stats';
 
-type Col = { key: string; label: string; title: string; pct?: boolean; int?: boolean };
+// total: "Нийт" горимын шошго (байхгүй бол label хэвээр)
+type Col = { key: string; label: string; total?: string; title: string; pct?: boolean; int?: boolean };
+type Mode = 'avg' | 'total';
 
 const SHOOT: Col[] = [
-  { key: 'ppg', label: 'PPG', title: 'Оноо / тоглолт' },
-  { key: 'fgm', label: 'FGM', title: 'Онож шидэлт / тоглолт' },
-  { key: 'fga', label: 'FGA', title: 'Шидэлт / тоглолт' },
+  { key: 'ppg', label: 'PPG', total: 'PTS', title: 'Оноо' },
+  { key: 'fgm', label: 'FGM', title: 'Онож шидэлт' },
+  { key: 'fga', label: 'FGA', title: 'Шидэлт' },
   { key: 'fgp', label: 'FG%', title: 'Шидэлтийн хувь', pct: true },
-  { key: 'tpm', label: '3PM', title: '3 оноо оносон / тоглолт' },
-  { key: 'tpa', label: '3PA', title: '3 онооны шидэлт / тоглолт' },
+  { key: 'tpm', label: '3PM', title: '3 оноо оносон' },
+  { key: 'tpa', label: '3PA', title: '3 онооны шидэлт' },
   { key: 'tpp', label: '3P%', title: '3 онооны хувь', pct: true },
-  { key: 'ftm', label: 'FTM', title: 'Торгуулийн оносон / тоглолт' },
-  { key: 'fta', label: 'FTA', title: 'Торгуулийн шидэлт / тоглолт' },
+  { key: 'ftm', label: 'FTM', title: 'Торгуулийн оносон' },
+  { key: 'fta', label: 'FTA', title: 'Торгуулийн шидэлт' },
   { key: 'ftp', label: 'FT%', title: 'Торгуулийн хувь', pct: true },
 ];
 const REST: Col[] = [
-  { key: 'rpg', label: 'RPG', title: 'Самбар / тоглолт' },
-  { key: 'apg', label: 'APG', title: 'Дамжуулалт / тоглолт' },
-  { key: 'spg', label: 'SPG', title: 'Таслалт / тоглолт' },
-  { key: 'bpg', label: 'BPG', title: 'Хаалт / тоглолт' },
-  { key: 'tpg', label: 'TPG', title: 'Алдаа / тоглолт' },
+  { key: 'rpg', label: 'RPG', total: 'REB', title: 'Самбар' },
+  { key: 'apg', label: 'APG', total: 'AST', title: 'Дамжуулалт' },
+  { key: 'spg', label: 'SPG', total: 'STL', title: 'Таслалт' },
+  { key: 'bpg', label: 'BPG', total: 'BLK', title: 'Хаалт' },
+  { key: 'tpg', label: 'TPG', total: 'TOV', title: 'Алдаа' },
 ];
 const PLAYER_COLS: Col[] = [
   { key: 'gp', label: 'GP', title: 'Тоглосон тоглолт', int: true },
-  { key: 'min', label: 'MIN', title: 'Минут / тоглолт' },
+  { key: 'min', label: 'MIN', title: 'Минут' },
   ...SHOOT,
-  { key: 'orpg', label: 'ORPG', title: 'Довтолгооны самбар / тоглолт' },
-  { key: 'drpg', label: 'DRPG', title: 'Хамгаалалтын самбар / тоглолт' },
+  { key: 'orpg', label: 'ORPG', total: 'OREB', title: 'Довтолгооны самбар' },
+  { key: 'drpg', label: 'DRPG', total: 'DREB', title: 'Хамгаалалтын самбар' },
   ...REST,
-  { key: 'pfpg', label: 'PF', title: 'Хувийн алдаа / тоглолт' },
+  { key: 'pfpg', label: 'PF', title: 'Хувийн алдаа' },
 ];
 const TEAM_COLS: Col[] = [
   { key: 'gp', label: 'GP', title: 'Тоглолт', int: true },
@@ -50,15 +52,18 @@ export default function StatsTable({
   teams,
   initialView = 'players',
   initialSort = 'ppg',
+  initialMode = 'avg',
   ac,
 }: {
   players: StatRow[];
   teams: StatRow[];
   initialView?: 'players' | 'teams';
   initialSort?: string;
+  initialMode?: Mode;
   ac: string;
 }) {
   const [view, setView] = useState(initialView);
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 }>({ key: initialSort, dir: -1 });
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
@@ -71,7 +76,7 @@ export default function StatsTable({
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
     const filtered = s ? data.filter((r) => `${r.name} ${r.sub}`.toLowerCase().includes(s)) : data;
-    const get = (r: StatRow) => (sort.key === 'name' ? r.name : r.v[sort.key] ?? null);
+    const get = (r: StatRow) => (sort.key === 'name' ? r.name : r[mode === 'avg' ? 'v' : 't'][sort.key] ?? null);
     return [...filtered].sort((a, b) => {
       const x = get(a);
       const y = get(b);
@@ -80,7 +85,7 @@ export default function StatsTable({
       if (y === null) return -1;
       return (typeof x === 'string' ? x.localeCompare(String(y)) : Number(x) - Number(y)) * sort.dir;
     });
-  }, [data, q, sort]);
+  }, [data, q, sort, mode]);
 
   const pages = Math.max(1, Math.ceil(rows.length / size));
   const cur = Math.min(page, pages);
@@ -97,7 +102,11 @@ export default function StatsTable({
     if (!(v === 'players' ? PLAYER_COLS : TEAM_COLS).some((c) => c.key === sort.key) && sort.key !== 'name') setSort({ key: 'ppg', dir: -1 });
   };
 
-  const fmt = (c: Col, v: number | null | undefined) => (v === null || v === undefined ? '-' : c.int || c.pct ? String(v) : v.toFixed(1));
+  const fmt = (c: Col, v: number | null | undefined) =>
+    v === null || v === undefined ? '-' : c.int || c.pct || mode === 'total' ? String(v) : v.toFixed(1);
+  const colLabel = (c: Col) => (mode === 'total' && c.total) || c.label;
+  const colTitle = (c: Col) => (c.int || c.pct ? c.title : `${c.title} ${mode === 'avg' ? '/ тоглолт' : '(нийт)'}`);
+  const pill = (active: boolean) => `px-5 h-9 rounded-full text-sm font-bold transition-colors ${active ? 'bg-surface shadow-sm' : 'text-muted hover:text-ink'}`;
 
   const Th = ({ k, label, title, className = '' }: { k: string; label: string; title: string; className?: string }) => {
     const active = sort.key === k;
@@ -116,24 +125,31 @@ export default function StatsTable({
   return (
     <div>
       <div className="flex items-center justify-between gap-4 flex-wrap mb-5">
-        <div className="inline-flex p-1 rounded-full bg-line">
-          {(
-            [
-              ['players', 'Тоглогчид'],
-              ['teams', 'Багууд'],
-            ] as const
-          ).map(([v, label]) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => switchView(v)}
-              aria-pressed={view === v}
-              className={`px-5 h-9 rounded-full text-sm font-bold transition-colors ${view === v ? 'bg-surface shadow-sm' : 'text-muted hover:text-ink'}`}
-              style={view === v ? { color: ac } : undefined}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="inline-flex p-1 rounded-full bg-line" role="group" aria-label="Тоглогч эсвэл баг">
+            {(
+              [
+                ['players', 'Тоглогчид'],
+                ['teams', 'Багууд'],
+              ] as const
+            ).map(([v, label]) => (
+              <button key={v} type="button" onClick={() => switchView(v)} aria-pressed={view === v} className={pill(view === v)} style={view === v ? { color: ac } : undefined}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="inline-flex p-1 rounded-full bg-line" role="group" aria-label="Дундаж эсвэл нийт">
+            {(
+              [
+                ['avg', 'Дундаж'],
+                ['total', 'Нийт'],
+              ] as const
+            ).map(([m, label]) => (
+              <button key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m} className={pill(mode === m)} style={mode === m ? { color: ac } : undefined}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="relative w-full sm:w-72">
           <span className="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-muted text-lg">search</span>
@@ -165,7 +181,7 @@ export default function StatsTable({
                 </th>
                 {isPlayers && <th className="py-3 px-2.5 font-bold text-[12px] text-ink2" title="Байрлал">POS</th>}
                 {cols.map((c) => (
-                  <Th key={c.key} k={c.key} label={c.label} title={c.title} className="text-center" />
+                  <Th key={c.key} k={c.key} label={colLabel(c)} title={colTitle(c)} className="text-center" />
                 ))}
               </tr>
             </thead>
@@ -190,7 +206,7 @@ export default function StatsTable({
                       className={`py-2.5 px-2.5 text-center tabular-nums whitespace-nowrap group-hover:bg-raise ${sort.key === c.key ? 'font-bold' : 'text-ink2'}`}
                       style={sort.key === c.key ? { color: ac } : undefined}
                     >
-                      {fmt(c, r.v[c.key])}
+                      {fmt(c, (mode === 'avg' ? r.v : r.t)[c.key])}
                     </td>
                   ))}
                 </tr>
