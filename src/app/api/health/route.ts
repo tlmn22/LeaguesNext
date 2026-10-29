@@ -16,6 +16,8 @@ export async function GET() {
     const err = e as Error & { code?: string };
     const kind = !env.DATABASE_URL ? 'DATABASE_URL missing' : err.code ?? err.name;
     console.error('[health]', kind, err.message);
-    return NextResponse.json({ ok: false, env, error: kind }, { status: 503 });
+    // Мессежээс URL/хост хэлбэрийн хэсгийг хасна
+    const message = String(err.message ?? '').replace(/\S+:\/\/\S+/g, '[url]').replace(/\S+\.(supabase\.(co|com)|amazonaws\.com)\S*/g, '[host]').slice(0, 200);
+    return NextResponse.json({ ok: false, env, error: kind, message }, { status: 503 });
   }
 }
