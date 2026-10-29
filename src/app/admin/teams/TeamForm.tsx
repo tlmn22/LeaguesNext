@@ -11,7 +11,7 @@ export default function TeamForm({ team }: { team?: TeamRow }) {
   return (
     <>
       <Crumbs items={[['Dashboard', '/admin'], ['Багууд', '/admin/teams'], [f ? f.name : 'Шинэ баг']]} />
-      <div className="border border-line rounded-lg p-6 max-w-3xl">
+      <div className="border border-line rounded-xl bg-surface p-6 max-w-3xl">
         <h2 className="font-display text-xl uppercase tracking-wide mb-5">{f ? 'Баг засах' : 'Шинэ баг'}</h2>
         <form action={saveTeam} className="space-y-5">
           {f && <input type="hidden" name="id" value={f.id} />}

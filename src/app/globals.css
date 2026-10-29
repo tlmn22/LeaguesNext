@@ -5,7 +5,7 @@
 /* Dark mode — <html class="dark"> */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Өнгөнүүд CSS хувьсагчаар — public (light/dark) болон admin (.admin-theme) өөр утга авна */
+/* Өнгөнүүд CSS хувьсагчаар — public болон admin ижил (light/dark) авна */
 @theme inline {
   --color-primary: var(--lm-accent);
   --color-primary-ink: var(--lm-accent-ink);
@@ -30,7 +30,7 @@
 :root {
   --lm-bg: #f6f4f0;
   --lm-surface: #ffffff;
-  --lm-raise: #ffffff;
+  --lm-raise: #faf8f5;
   --lm-text: #1f1a17;
   --lm-text2: #5a524b;
   --lm-muted: #6b625a;
@@ -63,25 +63,6 @@ html.dark {
   --lm-done: #9397ab;
 }
 
-/* Admin — үргэлж бараан */
-.admin-theme {
-  --lm-bg: #14151d;
-  --lm-surface: #1a1b26;
-  --lm-raise: #20212e;
-  --lm-text: #e9e9ed;
-  --lm-text2: #b2b6ca;
-  --lm-muted: #75798c;
-  --lm-line: rgba(233, 233, 237, 0.08);
-  --lm-line2: rgba(233, 233, 237, 0.14);
-  --lm-accent: #f2743a;
-  --lm-accent-ink: #ffa274;
-  --lm-accent-soft: rgba(242, 116, 58, 0.1);
-  --lm-live: #ef5f52;
-  --lm-open: #3fb173;
-  --lm-reg: #5b9bdd;
-  --lm-done: #75798c;
-  color-scheme: dark;
-}
 
 /* Material Icons Round — public/fonts-оос өөрсдөө өгнө */
 @font-face {
@@ -126,9 +107,9 @@ html.dark {
     font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
   }
-  .admin-theme input,
-  .admin-theme select,
-  .admin-theme textarea {
+  html.dark input,
+  html.dark select,
+  html.dark textarea {
     color-scheme: dark;
   }
   dialog::backdrop {
@@ -179,8 +160,7 @@ html.dark {
     z-index: 5;
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
   }
-  html.dark .sticky-col,
-  .admin-theme .sticky-col {
+  html.dark .sticky-col {
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.35);
   }
 

@@ -28,14 +28,27 @@ export default async function TeamsAdmin({ searchParams }: { searchParams: Promi
   }
   const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
   const total = Number(await scalar(`SELECT COUNT(*) FROM teams t ${w}`, params));
-  const teams = await query<{ id: number; name: string; short_name: string | null; city: string | null; gender: string; logo_path: string | null; season_count: number; player_count: number }>(
-    `SELECT t.id, t.name, t.short_name, t.city, t.gender, t.logo_path,
+  const teams = await query<{
+    id: number; name: string; short_name: string | null; city: string | null; gender: string; logo_path: string | null; primary_color: string | null;
+    season_count: number; player_count: number; league: string | null; season: string | null; roster: number | null;
+  }>(
+    `SELECT t.id, t.name, t.short_name, t.city, t.gender, t.logo_path, t.primary_color,
             (SELECT COUNT(*) FROM season_teams st WHERE st.team_id=t.id) AS season_count,
-            (SELECT COUNT(DISTINCT tsr.player_id) FROM team_season_roster tsr WHERE tsr.team_id=t.id) AS player_count
-     FROM teams t ${w} ORDER BY t.name ASC LIMIT ? OFFSET ?`,
+            (SELECT COUNT(DISTINCT tsr.player_id) FROM team_season_roster tsr WHERE tsr.team_id=t.id) AS player_count,
+            cur.league, cur.season, cur.roster
+     FROM teams t
+     -- Хамгийн сүүлд оролцсон лиг, улирал ба тэр улирлын идэвхтэй roster
+     LEFT JOIN LATERAL (
+       SELECT l.name AS league, s.name AS season,
+              (SELECT COUNT(*) FROM team_season_roster tsr WHERE tsr.season_team_id=st.id AND tsr.status='active') AS roster
+       FROM season_teams st JOIN seasons s ON s.id=st.season_id JOIN leagues l ON l.id=s.league_id
+       WHERE st.team_id=t.id ORDER BY s.id DESC LIMIT 1
+     ) cur ON true
+     ${w} ORDER BY t.name ASC LIMIT ? OFFSET ?`,
     [...params, PER, (page - 1) * PER],
   );
   const pages = Math.ceil(total / PER);
+  const first = (page - 1) * PER;
   const qs = (p: number) => `/admin/teams?${new URLSearchParams({ ...(q && { q }), ...(gender && { gender }), p: String(p) })}`;
 
   return (
@@ -59,36 +72,56 @@ export default async function TeamsAdmin({ searchParams }: { searchParams: Promi
       {teams.length === 0 ? (
         <Empty icon="groups">Баг олдсонгүй</Empty>
       ) : (
-        <div className="overflow-x-auto border border-line rounded-lg">
+        <>
+        <div className="text-sm text-muted mb-2.5">
+          <span className="text-ink font-semibold tabular-nums">{first + 1}–{first + teams.length}</span> / нийт {total}
+        </div>
+        <div className="overflow-x-auto border border-line rounded-xl bg-surface">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-muted text-[11px] uppercase tracking-wide border-b border-line">
-                <th className={`${TH} px-4`}>Баг</th>
+                <th className={`${TH} pl-4 !pr-1 w-12 !text-right`}>#</th>
+                <th className={TH}>Баг</th>
                 <th className={TH}>Хот</th>
                 <th className={TH}>Хүйс</th>
+                <th className={TH}>Өнгө</th>
+                <th className={`${TH} !text-center`} title="Хамгийн сүүлийн улирлын идэвхтэй тоглогч">Roster</th>
                 <th className={`${TH} !text-center`}>Улирал</th>
-                <th className={`${TH} !text-center`}>Тоглогч</th>
+                <th className={`${TH} !text-center`} title="Бүх улирлын нийт тоглогч">Нийт тоглогч</th>
                 <th className="w-24 py-2.5 px-4" />
               </tr>
             </thead>
             <tbody>
-              {teams.map((t) => {
+              {teams.map((t, i) => {
                 const g = GENDER[t.gender] ?? GENDER.M;
+                const meta = [t.short_name, t.league && `${t.league} · ${t.season}`].filter(Boolean).join(' · ');
                 return (
                   <tr key={t.id} className={TR}>
-                    <td className={`${TD} px-4`}>
-                      <div className="flex items-center gap-3">
-                        <Thumb src={t.logo_path} icon="groups" />
+                    <td className={`${TD} pl-4 !pr-1 text-right text-muted tabular-nums`}>{first + i + 1}</td>
+                    <td className={TD}>
+                      <Link href={`/admin/teams/${t.id}`} className="flex items-center gap-3 group">
+                        <Thumb src={t.logo_path} icon="groups" className="w-10 h-10 rounded-lg" />
                         <div className="min-w-0">
-                          <div className="font-medium truncate">{t.name}</div>
-                          {t.short_name && <div className="text-xs text-muted">{t.short_name}</div>}
+                          <div className="font-semibold truncate group-hover:text-primary-ink transition-colors">{t.name}</div>
+                          <div className="text-xs text-muted truncate max-w-[300px]">{meta || 'Улиралд оролцоогүй'}</div>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className={`${TD} text-ink2`}>{t.city || '—'}</td>
-                    <td className={TD}><span className="text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: g[1], background: g[1] + '1a' }}>{g[0]}</span></td>
-                    <td className={`${TD} text-center text-ink2`}>{t.season_count}</td>
-                    <td className={`${TD} text-center text-ink2`}>{t.player_count}</td>
+                    <td className={TD}><span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ color: g[1], background: g[1] + '1a' }}>{g[0]}</span></td>
+                    <td className={TD}>
+                      {t.primary_color ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-ink2 font-mono">
+                          <span className="w-4 h-4 rounded-full border border-line2" style={{ background: t.primary_color }} />
+                          {t.primary_color.toUpperCase()}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted">—</span>
+                      )}
+                    </td>
+                    <td className={`${TD} text-center tabular-nums ${t.roster ? 'font-semibold' : 'text-muted'}`}>{t.roster ?? '—'}</td>
+                    <td className={`${TD} text-center text-ink2 tabular-nums`}>{t.season_count}</td>
+                    <td className={`${TD} text-center text-ink2 tabular-nums`}>{t.player_count}</td>
                     <td className="py-2.5 px-4">
                       <div className="flex items-center gap-1.5 justify-end">
                         <Link href={`/admin/teams/${t.id}`} className={ICON_BTN} title="Засах"><I n="edit" className="text-sm" /></Link>
@@ -106,6 +139,7 @@ export default async function TeamsAdmin({ searchParams }: { searchParams: Promi
             </tbody>
           </table>
         </div>
+        </>
       )}
       <Pager page={page} pages={pages} hrefFor={qs} />
     </>

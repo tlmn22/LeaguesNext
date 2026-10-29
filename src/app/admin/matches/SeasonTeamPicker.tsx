@@ -42,7 +42,7 @@ export default function SeasonTeamPicker({
             <option key={s.id} value={s.id}>{s.league_name} — {s.name}</option>
           ))}
         </select>
-        {sid > 0 && list.length < 2 && <p className="text-xs text-amber-400 mt-1.5">Энэ улиралд 2-оос цөөн баг бүртгэлтэй байна. Эхлээд улиралд баг нэмнэ үү.</p>}
+        {sid > 0 && list.length < 2 && <p className="text-xs text-amber-700 dark:text-amber-400 mt-1.5">Энэ улиралд 2-оос цөөн баг бүртгэлтэй байна. Эхлээд улиралд баг нэмнэ үү.</p>}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>

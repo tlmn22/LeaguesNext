@@ -69,7 +69,7 @@ export default async function RosterPage({ params }: { params: Promise<{ id: str
     <>
       <Crumbs items={[['Dashboard', '/admin'], ['Улирал', '/admin/seasons'], [st.season_name, `/admin/seasons/${st.season_id}?tab=teams`], ['Roster']]} />
 
-      <div className="border border-line rounded-lg p-4 sm:p-5 mb-6 flex items-center gap-4 flex-wrap">
+      <div className="border border-line rounded-xl bg-surface p-4 sm:p-5 mb-6 flex items-center gap-4 flex-wrap">
         <Thumb src={st.logo_path} icon="groups" className="w-14 h-14 rounded-xl" />
         <div className="flex-1 min-w-0">
           <div className="font-display text-2xl">
@@ -144,7 +144,7 @@ export default async function RosterPage({ params }: { params: Promise<{ id: str
       {roster.length === 0 ? (
         <Empty icon="person">Roster хоосон байна</Empty>
       ) : (
-        <div className="overflow-x-auto border border-line rounded-lg">
+        <div className="overflow-x-auto border border-line rounded-xl bg-surface">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-muted text-[11px] uppercase tracking-wide border-b border-line">

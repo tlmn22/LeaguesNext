@@ -25,7 +25,7 @@ export default async function NewsForm({ user, news }: { user: User; news?: News
       <Crumbs items={[['Dashboard', '/admin'], ['Мэдээ', '/admin/news'], [f ? f.title : 'Шинэ мэдээ']]} />
       <form action={saveNews} className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
         {f && <input type="hidden" name="id" value={f.id} />}
-        <div className="border border-line rounded-lg p-6 space-y-5">
+        <div className="border border-line rounded-xl bg-surface p-6 space-y-5">
           <h2 className="font-display text-xl uppercase tracking-wide">{f ? 'Мэдээ засах' : 'Шинэ мэдээ'}</h2>
           <div>
             <label className={LBL}>Гарчиг <span className="text-live">*</span></label>

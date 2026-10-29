@@ -58,7 +58,7 @@ export default function SponsorsTab({ seasonId, sponsors }: { seasonId: number; 
                 <div className="text-[11px] font-medium uppercase tracking-widest text-muted mb-2">{label}</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {list.map((s) => (
-                    <div key={s.id} className="flex items-center gap-3 border border-line rounded-lg p-3">
+                    <div key={s.id} className="flex items-center gap-3 border border-line rounded-xl bg-surface p-3">
                       <span className="w-24 h-12 rounded-md bg-black grid place-items-center shrink-0 overflow-hidden p-1.5">
                         {s.logo ? <img src={fileUrl(s.logo)} alt="" className="max-w-full max-h-full object-contain" /> : <span className="text-white text-xs font-bold truncate px-1">{s.name}</span>}
                       </span>

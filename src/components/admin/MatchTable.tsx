@@ -13,7 +13,7 @@ export type MatchListRow = {
 
 export default function MatchTable({ matches, back, showSeason }: { matches: MatchListRow[]; back: string; showSeason?: boolean }) {
   return (
-    <div className="overflow-x-auto border border-line rounded-lg">
+    <div className="overflow-x-auto border border-line rounded-xl bg-surface">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-muted text-[11px] uppercase tracking-wide border-b border-line">

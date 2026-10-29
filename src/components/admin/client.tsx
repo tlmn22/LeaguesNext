@@ -103,7 +103,7 @@ export function Modal({
       </button>
       <dialog
         ref={ref}
-        className={`admin-theme m-auto bg-surface text-ink border border-line2 rounded-xl p-0 w-[calc(100%-2rem)] ${wide ? 'max-w-2xl' : 'max-w-md'} backdrop:bg-black/60`}
+        className={`m-auto bg-surface text-ink border border-line2 rounded-xl p-0 w-[calc(100%-2rem)] ${wide ? 'max-w-2xl' : 'max-w-md'} backdrop:bg-black/60`}
         onClick={(e) => e.target === ref.current && close()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-line">
@@ -154,7 +154,7 @@ export function Flash() {
       : msg.type === 'danger'
         ? 'bg-live/10 text-live border-live/30'
         : msg.type === 'warning'
-          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+          ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30'
           : 'bg-reg/10 text-reg border-reg/30';
   return (
     <div className={`flex items-center justify-between gap-3 mb-5 px-4 py-3 rounded-lg text-sm border ${cls}`} role="status">
@@ -252,13 +252,14 @@ export function NavLink({ href, icon, label, count }: { href: string; icon: stri
   return (
     <Link
       href={href}
-      className={`flex items-center gap-2.5 pl-[18px] pr-5 py-2 text-[13.5px] border-l-2 transition-colors ${
-        active ? 'text-white border-primary bg-primary/10' : 'text-muted border-transparent hover:text-ink hover:bg-raise'
+      aria-current={active ? 'page' : undefined}
+      className={`mx-3 flex items-center gap-2.5 px-3 h-9 rounded-lg text-[14px] font-semibold transition-colors ${
+        active ? 'text-primary-ink bg-primary/10' : 'text-ink2 hover:text-ink hover:bg-bg'
       }`}
     >
-      <span className="material-icons-round text-[17px] w-4 text-center">{icon}</span>
+      <span className="material-icons-round text-[18px] w-5 text-center">{icon}</span>
       <span className="flex-1">{label}</span>
-      {count != null && count !== '' && <span className="text-[10px] text-muted">{count}</span>}
+      {count != null && count !== '' && <span className={`text-[11px] font-medium tabular-nums ${active ? 'text-primary-ink' : 'text-muted'}`}>{count}</span>}
     </Link>
   );
 }

@@ -13,7 +13,7 @@ export default async function UserForm({ user }: { user?: UserRow }) {
     <>
       <Crumbs items={[['Dashboard', '/admin'], ['Хэрэглэгчид', '/admin/users'], [f ? f.name : 'Шинэ']]} />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start max-w-5xl">
-        <div className="border border-line rounded-lg p-6">
+        <div className="border border-line rounded-xl bg-surface p-6">
           <h2 className="font-display text-xl uppercase tracking-wide mb-5">{f ? 'Хэрэглэгч засах' : 'Шинэ хэрэглэгч'}</h2>
           <form action={saveUser} className="space-y-5">
             {f && <input type="hidden" name="id" value={f.id} />}

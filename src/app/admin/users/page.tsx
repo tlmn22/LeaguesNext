@@ -22,7 +22,7 @@ export default async function UsersAdmin() {
       <PageHead title="Хэрэглэгчид" count={users.length}>
         <Link href="/admin/users/new" className={BTN}><I n="person_add" className="text-base" /> Шинэ хэрэглэгч</Link>
       </PageHead>
-      <div className="overflow-x-auto border border-line rounded-lg">
+      <div className="overflow-x-auto border border-line rounded-xl bg-surface">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-muted text-[11px] uppercase tracking-wide border-b border-line">

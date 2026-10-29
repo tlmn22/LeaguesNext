@@ -30,7 +30,7 @@ export default async function LeaguesAdmin() {
       {leagues.length === 0 ? (
         <Empty icon="emoji_events">Лиг байхгүй байна</Empty>
       ) : (
-        <div className="overflow-x-auto border border-line rounded-lg">
+        <div className="overflow-x-auto border border-line rounded-xl bg-surface">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-muted text-[11px] uppercase tracking-wide border-b border-line">

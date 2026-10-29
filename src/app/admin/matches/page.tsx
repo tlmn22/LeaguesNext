@@ -82,7 +82,7 @@ export default async function MatchesAdmin({ searchParams }: { searchParams: Pro
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 max-w-2xl">
         {([['Нийт', all, 'text-primary'], ['Хуваарьт', c.scheduled ?? 0, 'text-reg'], ['Шууд', c.live ?? 0, 'text-live'], ['Дууссан', c.finished ?? 0, 'text-done']] as const).map(([l, v, cl]) => (
-          <div key={l} className="p-4 border border-line rounded-lg">
+          <div key={l} className="p-4 border border-line rounded-xl bg-surface">
             <div className="text-[10px] uppercase tracking-widest text-muted mb-1">{l}</div>
             <div className={`font-display text-2xl ${cl}`}>{v}</div>
           </div>

@@ -30,7 +30,7 @@ export default async function MatchForm({ user, match, seasonId }: { user: User;
   return (
     <>
       <Crumbs items={[['Dashboard', '/admin'], ['Тоглолтууд', '/admin/matches'], [f ? 'Засах' : 'Шинэ тоглолт']]} />
-      <div className="border border-line rounded-lg p-6 max-w-3xl">
+      <div className="border border-line rounded-xl bg-surface p-6 max-w-3xl">
         <h2 className="font-display text-xl uppercase tracking-wide mb-5">{f ? 'Тоглолт засах' : 'Шинэ тоглолт'}</h2>
         <form action={saveMatch} className="space-y-5">
           {f && <input type="hidden" name="id" value={f.id} />}

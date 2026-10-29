@@ -83,11 +83,16 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateRef = useRef({ head, periods, teamStats, rosters, lines });
   stateRef.current = { head, periods, teamStats, rosters, lines };
+  // Сүүлд хадгалснаас хойш өөрчлөгдсөн тоглогчид — зөвхөн тэднийг илгээнэ ('all' = бүгдийг)
+  const dirty = useRef<Set<number> | 'all'>(new Set());
+  const markDirty = (pid: number) => {
+    if (dirty.current !== 'all') dirty.current.add(pid);
+  };
 
-  const buildPayload = useCallback((): ScorePayload => {
+  const buildPayload = useCallback((ids: Set<number> | 'all'): ScorePayload => {
     const st = stateRef.current;
     const players = (['home', 'away'] as const).flatMap((side) =>
-      st.rosters[side].map((p) => {
+      st.rosters[side].filter((p) => ids === 'all' || ids.has(p.player_id)).map((p) => {
         const l = st.lines[p.player_id] ?? emptyLine();
         return {
           player_id: p.player_id,
@@ -117,14 +122,25 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
     if (savedVersion.current === version.current) return;
     saving.current = true;
     const v = version.current;
+    const ids = dirty.current;
+    dirty.current = new Set();
+    // Амжилтгүй бол илгээсэн тоглогчдыг дахин "өөрчлөгдсөн" болгоно
+    const restore = () => {
+      if (ids === 'all' || dirty.current === 'all') dirty.current = ids === 'all' ? 'all' : dirty.current;
+      else ids.forEach((id) => (dirty.current as Set<number>).add(id));
+    };
     setStatus({ text: 'Хадгалж байна...', tone: 'warn' });
     try {
-      const r = await save(buildPayload());
+      const r = await save(buildPayload(ids));
       if (r.ok) {
         savedVersion.current = v;
         setStatus({ text: `${r.savedAt ?? ''} Хадгалагдлаа`.trim(), tone: 'ok' });
-      } else setStatus({ text: r.message || 'Алдаа гарлаа', tone: 'err' });
+      } else {
+        restore();
+        setStatus({ text: r.message || 'Алдаа гарлаа', tone: 'err' });
+      }
     } catch {
+      restore();
       setStatus({ text: 'Холболт тасарлаа — дахин оролдоно уу', tone: 'err' });
     } finally {
       saving.current = false;
@@ -136,7 +152,16 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
 
   const schedule = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(doSave, 1500);
+    // Бичиж дуусмагц (0.4 сек) хадгална — товчлуур бүрт DB руу илгээхгүй
+    timer.current = setTimeout(doSave, 400);
+  }, [doSave]);
+
+  /** Талбараас гарах (Tab, Enter, дарах) үед хүлээлгүй шууд хадгална */
+  const flush = useCallback(() => {
+    if (!timer.current) return;
+    clearTimeout(timer.current);
+    timer.current = null;
+    doSave();
   }, [doSave]);
 
   const touch = useCallback(() => {
@@ -160,10 +185,12 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
 
   const setLine = (pid: number, f: PlayerField, val: string) => {
     setLines((L) => ({ ...L, [pid]: { ...(L[pid] ?? emptyLine()), v: { ...(L[pid] ?? emptyLine()).v, [f]: val } } }));
+    markDirty(pid);
     touch();
   };
   const setDnp = (pid: number, dnp: boolean) => {
     setLines((L) => ({ ...L, [pid]: dnp ? { dnp: true, v: emptyLine().v } : { ...(L[pid] ?? emptyLine()), dnp: false } }));
+    markDirty(pid);
     touch();
   };
 
@@ -197,7 +224,7 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
     }
   };
 
-  const toneCls = { muted: 'text-muted', warn: 'text-amber-400', ok: 'text-open', err: 'text-live' }[status.tone];
+  const toneCls = { muted: 'text-muted', warn: 'text-amber-700 dark:text-amber-400', ok: 'text-open', err: 'text-live' }[status.tone];
 
   const Num = ({ value, onChange, w = 'bi', min = 0, max, nav = true, ro = false }: { value: string; onChange: (v: string) => void; w?: string; min?: number; max?: number; nav?: boolean; ro?: boolean }) => (
     <input
@@ -213,6 +240,7 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
       data-nav={nav && !ro ? '' : undefined}
       onKeyDown={onKeyDown}
       onFocus={(e) => e.currentTarget.select()}
+      onBlur={flush}
       onChange={(e) => onChange(e.target.value)}
     />
   );
@@ -220,7 +248,7 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
   return (
     <div ref={containerRef} className="pb-20">
       {/* ── Header ── */}
-      <div className="border border-line rounded-lg p-4 sm:p-5 mb-4">
+      <div className="border border-line rounded-xl bg-surface p-4 sm:p-5 mb-4">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <div className="flex items-center justify-end gap-3 text-right min-w-0">
             <div className="min-w-0">
@@ -247,7 +275,7 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
 
       {/* ── Дүн + Quarter + Team stats ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 mb-4">
-        <div className="border border-line rounded-lg p-4">
+        <div className="border border-line rounded-xl bg-surface p-4">
           <div className="text-[11px] font-medium uppercase tracking-widest text-muted mb-3">Эцсийн дүн & Статус</div>
           <div className="flex items-end gap-2 mb-3">
             {(['home', 'away'] as const).map((side, i) => (
@@ -301,7 +329,7 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
           </div>
         </div>
 
-        <div className="border border-line rounded-lg p-4 overflow-x-auto">
+        <div className="border border-line rounded-xl bg-surface p-4 overflow-x-auto">
           <div className="text-[11px] font-medium uppercase tracking-widest text-muted mb-3">Quarter дүн & Багийн статистик</div>
           <table className="w-full min-w-[640px] border-collapse">
             <thead>
@@ -311,7 +339,7 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
                   <th key={p} className="font-semibold py-1.5 px-1">{p}</th>
                 ))}
                 {TEAM_STAT_FIELDS.map(([f, l]) => (
-                  <th key={f} className="font-medium py-1.5 px-1 text-amber-400/80">{l}</th>
+                  <th key={f} className="font-medium py-1.5 px-1 text-amber-700/80 dark:text-amber-400/80">{l}</th>
                 ))}
               </tr>
             </thead>
@@ -370,6 +398,7 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
           }}
           onAdded={(p) => {
             setLines((L) => ({ ...L, [p.player_id]: L[p.player_id] ?? emptyLine() }));
+            markDirty(p.player_id);
             touch();
           }}
         />
@@ -384,6 +413,8 @@ export default function BoxScoreEditor({ match, initial, save, readOnly = false,
               type="button"
               onClick={() => {
                 if (timer.current) clearTimeout(timer.current);
+                // Гараар хадгалахад бүх тоглогчийг илгээнэ
+                dirty.current = 'all';
                 version.current++;
                 doSave();
               }}
@@ -432,7 +463,7 @@ function TeamBox({
   );
 
   return (
-    <div className="border border-line rounded-lg mb-4 overflow-hidden">
+    <div className="border border-line rounded-xl bg-surface mb-4 overflow-hidden">
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-line">
         <div className="font-semibold flex items-center gap-2">
           <span className="material-icons-round text-base text-muted">{side === 'home' ? 'home' : 'flight'}</span>
@@ -472,7 +503,7 @@ function TeamBox({
               <th className={HEAD}>DR</th>
               <th className={`${HEAD} text-reg`}>REB</th>
               <th className={`${HEAD} text-reg`}>AST</th>
-              <th className={`${HEAD} text-amber-400`}>TO</th>
+              <th className={`${HEAD} text-amber-700 dark:text-amber-400`}>TO</th>
               <th className={`${HEAD} text-open`}>STL</th>
               <th className={`${HEAD} text-open`}>BLK</th>
               <th className={`${HEAD} text-live`}>PF</th>

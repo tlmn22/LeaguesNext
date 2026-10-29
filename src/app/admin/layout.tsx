@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { requireUser, roleLabel, type User } from '@/lib/auth';
 import { scalar } from '@/lib/db';
 import { fmtDate, nowUB } from '@/lib/format';
 import { Flash, NavLink, SidebarShell } from '@/components/admin/client';
+import { Logo } from '@/components/public/lmn';
+import ThemeToggle from '@/components/public/ThemeToggle';
 
 export const metadata: Metadata = {
   title: { default: 'Admin', template: '%s — LeagueMN Admin' },
@@ -74,18 +75,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const sidebar = (
     <>
-      <div className="px-5 py-4 border-b border-line shrink-0">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="font-display text-xl font-semibold">
-            League<span className="text-primary">MN</span>
-          </span>
-        </Link>
-        <span className="inline-block mt-2 text-[10px] font-medium uppercase tracking-widest text-primary-ink bg-primary/15 px-2 py-0.5 rounded">{roleLabel(user.role)}</span>
+      <div className="px-5 h-16 flex items-center justify-between gap-2 border-b border-line shrink-0">
+        <Logo />
+        <span className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-primary-ink bg-primary/10 px-2 py-1 rounded-full">{roleLabel(user.role)}</span>
       </div>
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav className="flex-1 overflow-y-auto py-3 space-y-4">
         {menu.map(([group, items]) => (
-          <div key={group} className="py-2 border-b border-line">
-            <div className="px-5 pb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted">{group}</div>
+          <div key={group} className="space-y-0.5">
+            <div className="px-6 pb-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-muted">{group}</div>
             {items.map((it) => (
               <NavLink key={it.href} href={it.href} icon={it.icon} label={it.label} count={it.count} />
             ))}
@@ -105,17 +102,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   );
 
   return (
-    <div className="admin-theme bg-bg text-ink min-h-screen font-sans">
+    <div className="lmn-site bg-bg text-ink min-h-screen font-sans">
       <SidebarShell sidebar={sidebar}>
-        <header className="sticky top-0 z-20 bg-surface border-b border-line px-4 md:px-7 py-3 flex items-center justify-between gap-3 min-h-[58px]">
+        <header className="sticky top-0 z-20 bg-surface/90 backdrop-blur border-b border-line px-4 md:px-7 flex items-center justify-between gap-3 h-16">
           <div className="pl-11 md:pl-0 text-xs text-muted truncate">
-            {user.role === 'commissioner' && !user.league_id && <span className="text-amber-400">Танд лиг оноогоогүй байна — админд хандана уу.</span>}
+            {user.role === 'commissioner' && !user.league_id && <span className="text-amber-700 dark:text-amber-400">Танд лиг оноогоогүй байна — админд хандана уу.</span>}
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <span className="hidden sm:inline-flex items-center gap-1 text-xs text-muted">
               <span className="material-icons-round text-sm">schedule</span>
               {fmtDate(nowUB(), 'Y.m.d H:i')}
             </span>
+            <a href="/" target="_blank" rel="noopener" className="lmn-btn !h-10 !text-[13px]">
+              <span className="material-icons-round text-[18px]" aria-hidden="true">open_in_new</span>
+              <span className="hidden sm:inline">Сайт</span>
+            </a>
+            <ThemeToggle />
           </div>
         </header>
         <main className="p-4 md:p-7 flex-1">

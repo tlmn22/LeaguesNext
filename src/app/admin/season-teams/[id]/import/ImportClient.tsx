@@ -7,7 +7,7 @@ import { importRoster, previewRoster, type ImportRow } from './actions';
 const BADGE: Record<ImportRow['status'], [string, string]> = {
   new: ['bg-open/10 text-open', 'Шинэ тоглогч'],
   add: ['bg-reg/10 text-reg', 'Roster-т нэмэгдэнэ'],
-  exists: ['bg-amber-400/10 text-amber-400', 'Шинэчлэгдэнэ'],
+  exists: ['bg-amber-400/10 text-amber-700 dark:text-amber-400', 'Шинэчлэгдэнэ'],
   conflict: ['bg-live/10 text-live', 'Өөр багт байна — алгасна'],
 };
 
@@ -21,7 +21,7 @@ export default function ImportClient({ stid, back }: { stid: number; back: strin
 
   return (
     <div className="space-y-5">
-      <div className="border border-line rounded-lg p-5">
+      <div className="border border-line rounded-xl bg-surface p-5">
         <div className="text-sm text-ink2 mb-4 space-y-1">
           <p className="font-medium text-ink">Заавар</p>
           <ol className="list-decimal pl-5 text-muted space-y-0.5">
@@ -68,14 +68,14 @@ export default function ImportClient({ stid, back }: { stid: number; back: strin
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {([['new', 'Шинэ тоглогч', '#3fb173'], ['add', 'Roster-т нэмэх', '#5b9bdd'], ['exists', 'Шинэчлэгдэх', '#f39c12'], ['conflict', 'Алгасах', '#ef5f52']] as const).map(([k, l, c]) => (
-              <div key={k} className="border border-line rounded-lg p-3 text-center">
+              <div key={k} className="border border-line rounded-xl bg-surface p-3 text-center">
                 <div className="font-display text-3xl" style={{ color: c }}>{count(k)}</div>
                 <div className="text-xs text-muted">{l}</div>
               </div>
             ))}
           </div>
 
-          <div className="overflow-x-auto border border-line rounded-lg">
+          <div className="overflow-x-auto border border-line rounded-xl bg-surface">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-muted text-[11px] uppercase tracking-wide border-b border-line">
@@ -113,7 +113,7 @@ export default function ImportClient({ stid, back }: { stid: number; back: strin
             </table>
           </div>
 
-          <div className="flex items-center justify-between gap-3 flex-wrap border border-line rounded-lg p-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap border border-line rounded-xl bg-surface p-4">
             <div className="text-sm">
               <b>{count('new') + count('add')}</b> тоглогч нэмэгдэх · <b>{count('exists')}</b> шинэчлэгдэх
             </div>

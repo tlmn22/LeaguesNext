@@ -14,7 +14,7 @@ export default function PlayerForm({ player }: { player?: PlayerRow }) {
   return (
     <>
       <Crumbs items={[['Dashboard', '/admin'], ['Тоглогчид', '/admin/players'], [f ? `${f.last_name} ${f.first_name}` : 'Шинэ тоглогч']]} />
-      <div className="border border-line rounded-lg p-6 max-w-3xl">
+      <div className="border border-line rounded-xl bg-surface p-6 max-w-3xl">
         <h2 className="font-display text-xl uppercase tracking-wide mb-5">{f ? 'Тоглогч засах' : 'Шинэ тоглогч'}</h2>
         <form action={savePlayer} className="space-y-5">
           {f && <input type="hidden" name="id" value={f.id} />}

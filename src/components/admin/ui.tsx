@@ -10,7 +10,7 @@ export const LBL = 'block text-[11px] font-medium uppercase tracking-widest text
 export const BTN =
   'inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border border-primary text-primary-ink hover:bg-primary/10 transition-colors disabled:opacity-50';
 export const BTN_SOLID =
-  'inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-50';
+  'inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-ink text-white dark:bg-primary dark:text-[#1f1a17] hover:opacity-90 transition-opacity disabled:opacity-50';
 export const BTN_GHOST =
   'inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border border-line2 text-ink2 hover:border-primary hover:text-ink transition-colors disabled:opacity-50';
 export const ICON_BTN =
@@ -63,7 +63,7 @@ const PILL: Record<string, [string, string]> = {
   published: ['text-open bg-open/10', 'Нийтлэгдсэн'],
   active: ['text-open bg-open/10', 'Идэвхтэй'],
   inactive: ['text-muted bg-muted/10', 'Идэвхгүй'],
-  injured: ['text-amber-400 bg-amber-400/10', 'Гэмтэлтэй'],
+  injured: ['text-amber-700 dark:text-amber-400 bg-amber-400/10', 'Гэмтэлтэй'],
 };
 
 export function Pill({ status }: { status: string | null | undefined }) {
@@ -74,7 +74,7 @@ export function Pill({ status }: { status: string | null | undefined }) {
 
 export function Empty({ icon, children }: { icon: string; children: ReactNode }) {
   return (
-    <div className="text-center py-16 border border-line rounded-lg text-muted">
+    <div className="text-center py-16 border border-line rounded-xl bg-surface text-muted">
       <I n={icon} className="text-3xl block mb-2 opacity-40" />
       <div className="text-sm">{children}</div>
     </div>
@@ -83,7 +83,7 @@ export function Empty({ icon, children }: { icon: string; children: ReactNode })
 
 export function Card({ title, children, className = '' }: { title?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <div className={`border border-line rounded-lg p-5 ${className}`}>
+    <div className={`border border-line rounded-xl bg-surface p-5 ${className}`}>
       {title && <h3 className="font-medium text-[13px] uppercase tracking-widest text-muted mb-3">{title}</h3>}
       {children}
     </div>
@@ -100,7 +100,7 @@ export function Thumb({ src, className = 'w-9 h-9 rounded-lg', icon = 'emoji_eve
 
 export function StatTile({ label, value, icon, color, sub }: { label: string; value: ReactNode; icon: string; color: string; sub?: string }) {
   return (
-    <div className="relative overflow-hidden border border-line rounded-lg p-5 pl-[22px]">
+    <div className="relative overflow-hidden border border-line rounded-xl bg-surface p-5 pl-[22px]">
       <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: color }} />
       <div className="flex items-start justify-between">
         <div>

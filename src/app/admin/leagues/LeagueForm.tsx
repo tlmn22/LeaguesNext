@@ -21,7 +21,7 @@ export default async function LeagueForm({ league }: { league?: LeagueRow }) {
     <>
       <Crumbs items={[['Dashboard', '/admin'], ['Лигүүд', '/admin/leagues'], [f ? f.name : 'Шинэ лиг']]} />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
-        <div className="border border-line rounded-lg p-6">
+        <div className="border border-line rounded-xl bg-surface p-6">
           <h2 className="font-display text-xl uppercase tracking-wide mb-5">{title}</h2>
           <form action={saveLeague} className="space-y-5">
             {f && <input type="hidden" name="id" value={f.id} />}

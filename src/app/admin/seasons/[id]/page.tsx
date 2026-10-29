@@ -63,7 +63,7 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
     <>
       <Crumbs items={[['Dashboard', '/admin'], ['Улирал', '/admin/seasons'], [season.name]]} />
 
-      <div className="border border-line rounded-lg p-5 mb-6">
+      <div className="border border-line rounded-xl bg-surface p-5 mb-6">
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <div className="font-display text-3xl leading-none">{season.name}</div>
@@ -144,7 +144,7 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
               {teams.map((t) => {
                 const g = GENDER[t.gender] ?? GENDER.M;
                 return (
-                  <div key={t.id} className="border border-line rounded-lg p-4 text-center flex flex-col">
+                  <div key={t.id} className="border border-line rounded-xl bg-surface p-4 text-center flex flex-col">
                     <Thumb src={t.logo_path} icon="groups" className="w-14 h-14 rounded-xl mx-auto mb-2" />
                     <div className="font-semibold">{t.team_name}</div>
                     {t.short_name && <div className="text-[11px] text-muted">{t.short_name}</div>}

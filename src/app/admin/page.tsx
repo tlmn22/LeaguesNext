@@ -75,9 +75,9 @@ export default async function Dashboard() {
             <Link href="/admin/matches" className="text-[12px] font-medium text-primary-ink hover:text-primary">Бүгдийг харах →</Link>
           </div>
           {recent.length === 0 ? (
-            <div className="text-center py-14 text-muted text-sm border border-line rounded-lg">Тоглолт байхгүй</div>
+            <div className="text-center py-14 text-muted text-sm border border-line rounded-xl bg-surface">Тоглолт байхгүй</div>
           ) : (
-            <div className="overflow-x-auto border border-line rounded-lg">
+            <div className="overflow-x-auto border border-line rounded-xl bg-surface">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-muted text-[11px] uppercase tracking-wide border-b border-line">
