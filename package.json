@@ -10,7 +10,7 @@
     "db:export": "tsx scripts/migrate-supabase.ts",
     "db:migrate": "tsx scripts/migrate-supabase.ts --apply",
     "test:db": "tsx scripts/test-postgres.ts",
-    "storage:upload": "tsx --env-file=.env.local scripts/upload-storage.ts"
+    "storage:upload": "tsx --env-file=.env.local scripts/upload-storage.mts"
   },
   "dependencies": {
     "bcryptjs": "3.0.3",
