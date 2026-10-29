@@ -40,12 +40,19 @@ export function postgresConfig(connectionString = process.env.DATABASE_URL): Poo
   if (!['postgres:', 'postgresql:'].includes(url.protocol)) throw new Error('DATABASE_URL must be a PostgreSQL URI');
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
   for (const key of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert']) url.searchParams.delete(key);
+  // Serverless (Vercel) функц хөлдөхдөө холболтоо барьдаг тул Supabase-ийн session pooler (5432, нийт 15 байр)
+  // хурдан дүүрнэ — transaction pooler (6543) руу шилжүүлнэ.
+  const serverless = Boolean(process.env.VERCEL);
+  if (serverless && url.hostname.endsWith('.pooler.supabase.com') && (url.port === '5432' || url.port === '')) {
+    url.port = '6543';
+    console.warn('[postgres] Vercel дээр session pooler-ийн оронд transaction pooler (6543) ашиглаж байна.');
+  }
   const ca = local ? undefined : sslCa();
   return {
     connectionString: url.toString(),
     ssl: local ? false : { rejectUnauthorized: true, ...(ca ? { ca } : {}) },
-    max: Number(process.env.DATABASE_POOL_MAX ?? 5),
-    idleTimeoutMillis: 30000,
+    max: Number(process.env.DATABASE_POOL_MAX ?? (serverless ? 1 : 5)),
+    idleTimeoutMillis: serverless ? 5000 : 30000,
     connectionTimeoutMillis: 10000,
     application_name: 'leagues-next',
   };
