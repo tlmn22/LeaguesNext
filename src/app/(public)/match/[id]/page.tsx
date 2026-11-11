@@ -251,7 +251,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex items-center gap-2 text-xs text-muted mb-8 flex-wrap">
-          <Link href="/" className="hover:text-primary transition-colors">LeagueMN</Link>
+          <Link href="/" className="hover:text-primary transition-colors">Lig.MN</Link>
           <span>/</span>
           <Link href={leagueHref(lgSlug, m.lid, m.sid)} className="hover:text-primary transition-colors">{m.lg_name}</Link>
           <span>/</span>

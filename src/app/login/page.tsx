@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </h1>
             <LoginForm next={next} />
           </div>
-          <div className="text-center mt-5 text-xs text-muted">© {new Date().getFullYear()} LeagueMN</div>
+          <div className="text-center mt-5 text-xs text-muted">© {new Date().getFullYear()} Lig.MN</div>
         </div>
       </div>
     </div>

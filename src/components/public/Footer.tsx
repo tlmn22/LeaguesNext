@@ -29,7 +29,7 @@ export default function Footer() {
           </div>
         ))}
       </div>
-      <div className="lmn-copy">© {new Date().getFullYear()} LeagueMN. Бүх эрх хуулиар хамгаалагдсан.</div>
+      <div className="lmn-copy">© {new Date().getFullYear()} Lig.MN. Бүх эрх хуулиар хамгаалагдсан.</div>
     </footer>
   );
 }

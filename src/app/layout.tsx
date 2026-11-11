@@ -11,11 +11,11 @@ const GA_ID = 'G-41KP2QTQ01';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? 'https://leagues.mn'),
-  title: { default: 'LeagueMN', template: '%s | LeagueMN' },
+  title: { default: 'Lig.MN', template: '%s | Lig.MN' },
   description: 'Монголын сагсан бөмбөгийн лигүүдийн тоглолт, хүснэгт, тоглогчийн статистик нэг дороос.',
   manifest: '/manifest.json',
   icons: { icon: '/icons/icon.svg', apple: '/icons/icon.svg' },
-  appleWebApp: { capable: true, title: 'LeagueMN', statusBarStyle: 'black-translucent' },
+  appleWebApp: { capable: true, title: 'Lig.MN', statusBarStyle: 'black-translucent' },
   other: { 'mobile-web-app-capable': 'yes' },
 };
 

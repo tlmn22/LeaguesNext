@@ -123,7 +123,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
     <>
       <header className="max-w-5xl mx-auto px-4 sm:px-6 pt-8">
         <div className="flex items-center gap-2 text-xs text-muted mb-6 flex-wrap">
-          <Link href="/" className="hover:text-primary transition-colors">LeagueMN</Link>
+          <Link href="/" className="hover:text-primary transition-colors">Lig.MN</Link>
           {cur && (
             <>
               <span>/</span>

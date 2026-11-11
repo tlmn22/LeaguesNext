@@ -1,17 +1,17 @@
 import { query } from '@/lib/db';
-import { accentOf, fileUrl, fmtDate, initials, upper3 } from '@/lib/format';
+import { DAY_MN, accentOf, addDays, dayIndex, fileUrl, fmtDate, initials, todayUB, upper3 } from '@/lib/format';
 import { latestNews, toCard } from '@/lib/news';
 import { upcomingGames } from '@/lib/upcoming';
 import { leagueHref } from '@/components/public/LeagueCard';
 import {
   EmptyState, LeaguesPanel, NewsCard, NewsFeatured, NewsList, ResultsStrip, SectionHeader, UpcomingPanel,
-  type LeagueRowData, type Result,
+  type LeagueRowData, type Result, type ResultDay,
 } from '@/components/public/lmn';
 
 export const dynamic = 'force-dynamic';
 
 type Recent = {
-  id: number; match_datetime: string; home_score: number; away_score: number;
+  id: number; match_datetime: string; status: string; home_score: number | null; away_score: number | null;
   lg_name: string; ht: string; hl: string | null; hsn: string | null; at: string; al: string | null; asn: string | null;
 };
 
@@ -30,14 +30,17 @@ const MATCH_TEAMS = `
 
 export default async function HomePage() {
   const [recent, news, seasons, games] = await Promise.all([
-    // Сүүлийн 7 хоногт болсон дууссан тоглолтууд — хамгийн сүүлийнх нь эхэнд
+    // Тоглолтын тууз: сүүлийн 7 хоногт дууссан (зүүн) → өнөөдөр → ирэх 7 хоногийн товлосон (баруун)
     query<Recent>(`
-      SELECT m.id, m.match_datetime, m.home_score, m.away_score, l.name AS lg_name,
+      SELECT m.id, m.match_datetime, m.status, m.home_score, m.away_score, l.name AS lg_name,
              ht.name AS ht, ht.logo_path AS hl, ht.short_name AS hsn,
              at2.name AS at, at2.logo_path AS al, at2.short_name AS asn
       FROM matches m ${MATCH_TEAMS}
-      WHERE m.status = 'finished' AND m.match_datetime >= (app_now() - INTERVAL '7 days')
-      ORDER BY m.match_datetime DESC`),
+      WHERE m.match_datetime < (app_now()::date + INTERVAL '8 days')
+        AND ((m.status = 'finished' AND m.match_datetime >= (app_now()::date - INTERVAL '7 days'))
+          OR m.status = 'live'
+          OR (m.status = 'scheduled' AND m.match_datetime >= app_now()::date))
+      ORDER BY m.match_datetime ASC, m.id ASC`),
     latestNews(9),
     // Бүх лигийн улирлууд — явагдаж буй нь эхэнд
     query<LeagueSeason>(`
@@ -51,13 +54,30 @@ export default async function HomePage() {
     upcomingGames(5),
   ]);
 
+  const scored = (r: Recent) => r.status === 'finished' || r.status === 'live';
   const results: Result[] = recent.map((r) => ({
     href: `/match/${r.id}`,
-    date: fmtDate(r.match_datetime, 'm.d'),
+    day: r.match_datetime.slice(0, 10),
+    time: fmtDate(r.match_datetime, 'H:i'),
+    status: r.status,
     league: r.lg_name,
-    home: { abbr: upper3(r.hsn || r.ht), name: r.ht, score: r.home_score, logo: r.hl ? fileUrl(r.hl) : null },
-    away: { abbr: upper3(r.asn || r.at), name: r.at, score: r.away_score, logo: r.al ? fileUrl(r.al) : null },
+    home: { abbr: upper3(r.hsn || r.ht), name: r.ht, score: scored(r) ? Number(r.home_score ?? 0) : null, logo: r.hl ? fileUrl(r.hl) : null },
+    away: { abbr: upper3(r.asn || r.at), name: r.at, score: scored(r) ? Number(r.away_score ?? 0) : null, logo: r.al ? fileUrl(r.al) : null },
   }));
+  // Өдрөөр бүлэглэнэ; өнөөдөр (эсвэл дараагийн тоглолттой өдөр) туузын голд байрлана
+  const today = todayUB();
+  const rel: Record<string, string> = { [addDays(today, -1)]: 'Өчигдөр', [today]: 'Өнөөдөр', [addDays(today, 1)]: 'Маргааш' };
+  const days: ResultDay[] = [];
+  for (const r of results) {
+    let d = days[days.length - 1];
+    if (!d || d.day !== r.day) {
+      d = { day: r.day, weekday: rel[r.day] ?? DAY_MN[dayIndex(r.day)], label: fmtDate(r.day, 'm.d'), today: r.day === today, anchor: false, games: [] };
+      days.push(d);
+    }
+    d.games.push(r);
+  }
+  const anchor = days.find((d) => d.day >= today);
+  if (anchor) anchor.anchor = true;
   const leagues: LeagueRowData[] = seasons.map((l) => ({
     href: leagueHref(l.slug, l.id, l.sid),
     name: l.name,
@@ -72,7 +92,7 @@ export default async function HomePage() {
 
   return (
     <main className="lmn-main">
-      <ResultsStrip results={results} />
+      <ResultsStrip days={days} />
       <div className="lmn-body">
         <section className="lmn-stack">
           <SectionHeader title="Мэдээ" linkLabel="Бүх мэдээ →" href="/news" />

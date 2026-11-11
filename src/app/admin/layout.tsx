@@ -8,7 +8,7 @@ import { Logo } from '@/components/public/lmn';
 import ThemeToggle from '@/components/public/ThemeToggle';
 
 export const metadata: Metadata = {
-  title: { default: 'Admin', template: '%s — LeagueMN Admin' },
+  title: { default: 'Admin', template: '%s — Lig.MN Admin' },
   robots: { index: false, follow: false },
 };
 export const dynamic = 'force-dynamic';

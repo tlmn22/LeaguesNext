@@ -2,6 +2,7 @@
 // LeagueMN design system-ийн component-ууд (LeagueMN/components/bundle.js-ийн хувилбар). Класс нь src/app/lmn.css-д.
 import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
+import ScoreScroller from './ScoreScroller';
 
 const cx = (...a: (string | false | null | undefined)[]) => a.filter(Boolean).join(' ');
 
@@ -11,8 +12,8 @@ export function Icon({ n, className }: { n: string; className?: string }) {
 
 export function Logo() {
   return (
-    <Link href="/" className="lmn-logo" aria-label="LeagueMN — Нүүр">
-      League<em>MN</em>
+    <Link href="/" className="lmn-logo" aria-label="Lig.MN — Нүүр">
+      Lig<em>.MN</em>
       <i />
     </Link>
   );
@@ -39,8 +40,11 @@ export function EmptyState({ icon = 'inbox', title, text, compact }: { icon?: st
 
 /* ---------- results ---------- */
 
-export type ResultTeam = { abbr: string; name: string; score: number; logo?: string | null };
-export type Result = { href: string; date: string; league: string; home: ResultTeam; away: ResultTeam };
+export type ResultTeam = { abbr: string; name: string; score: number | null; logo?: string | null };
+/** day: "YYYY-MM-DD"; status: finished | live | scheduled; time: "18:00" */
+export type Result = { href: string; day: string; time: string; status: string; league: string; home: ResultTeam; away: ResultTeam };
+/** Өдрийн хуваагч карт: өнөөдрийг тодруулж, туузыг ачаалахад голлуулна */
+export type ResultDay = { day: string; weekday: string; label: string; today: boolean; anchor: boolean; games: Result[] };
 
 function TeamLine({ t, state }: { t: ResultTeam; state: 'winner' | 'loser' | null }) {
   return (
@@ -49,35 +53,47 @@ function TeamLine({ t, state }: { t: ResultTeam; state: 'winner' | 'loser' | nul
         {t.logo ? <img src={t.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : t.abbr[0]}
       </span>
       <span className="lmn-team-abbr" title={t.name}>{t.abbr}</span>
-      <span className="lmn-team-score">{t.score}</span>
+      <span className="lmn-team-score">{t.score ?? ''}</span>
     </div>
   );
 }
 
-export function ResultsStrip({ results }: { results: Result[] }) {
+export function ResultsStrip({ days }: { days: ResultDay[] }) {
   return (
     <section>
-      <SectionHeader title="Сүүлд болсон тоглолтууд" linkLabel="Бүх хуваарь →" href="/schedule" />
-      {results.length === 0 ? (
+      <SectionHeader title="Тоглолтууд" linkLabel="Бүх хуваарь →" href="/schedule" />
+      {days.length === 0 ? (
         <div className="lmn-card">
-          <EmptyState icon="sports_basketball" title="Сүүлийн 7 хоногт тоглолт болоогүй" compact />
+          <EmptyState icon="sports_basketball" title="Ойрын өдрүүдэд тоглолт алга" compact />
         </div>
       ) : (
-        <div className="lmn-strip-wrap">
-          <div className="lmn-strip" role="list">
-            {results.map((r) => {
-              const hw = r.home.score > r.away.score;
-              const aw = r.away.score > r.home.score;
-              return (
-                <Link key={r.href} href={r.href} role="listitem" className="lmn-card lmn-result" aria-label={`${r.home.abbr} ${r.home.score}, ${r.away.abbr} ${r.away.score}`}>
-                  <div className="lmn-result-h"><span>{r.date}</span>·<b>{r.league}</b></div>
-                  <TeamLine t={r.home} state={hw ? 'winner' : aw ? 'loser' : null} />
-                  <TeamLine t={r.away} state={aw ? 'winner' : hw ? 'loser' : null} />
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        <ScoreScroller>
+          {days.map((d) => (
+            <div key={d.day} className="lmn-strip-day" role="presentation" data-anchor={d.anchor ? '' : undefined}>
+              <div className={cx('lmn-day', d.today && 'is-today')} role="listitem">
+                <b>{d.weekday}</b>
+                <span>{d.label}</span>
+              </div>
+              {d.games.map((r) => {
+                const done = r.status === 'finished';
+                const hs = r.home.score ?? 0;
+                const as = r.away.score ?? 0;
+                const hw = done && hs > as;
+                const aw = done && as > hs;
+                return (
+                  <Link key={r.href} href={r.href} role="listitem" className="lmn-card lmn-result" aria-label={`${r.home.name} — ${r.away.name}`}>
+                    <div className="lmn-result-h">
+                      {r.status === 'live' ? <span className="lmn-result-live">● Шууд</span> : <b className="lmn-result-st">{done ? 'Дууссан' : r.time}</b>}
+                      <span className="lmn-result-lg">{r.league}</span>
+                    </div>
+                    <TeamLine t={r.home} state={hw ? 'winner' : aw ? 'loser' : null} />
+                    <TeamLine t={r.away} state={aw ? 'winner' : hw ? 'loser' : null} />
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </ScoreScroller>
       )}
     </section>
   );

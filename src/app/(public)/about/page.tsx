@@ -15,7 +15,7 @@ const FEATURES = [
 const STEPS = [
   ['1', 'shield', 'Лиг бүртгүүлнэ', 'Тэмцээний зохион байгуулагч лигийн мэдээллээ оруулж, улирал нээнэ.'],
   ['2', 'edit_note', 'Стат оруулна', 'Статистикч тоглолт бүрийн дүн, тоглогчийн статистикийг бүртгэнэ.'],
-  ['3', 'public', 'Олон нийтэд', 'Бүх мэдээлэл LeagueMN-д нэн даруй нийтлэгдэнэ.'],
+  ['3', 'public', 'Олон нийтэд', 'Бүх мэдээлэл Lig.MN-д нэн даруй нийтлэгдэнэ.'],
 ];
 
 export default async function AboutPage() {
@@ -30,7 +30,7 @@ export default async function AboutPage() {
     <>
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-16 pb-14 text-center">
         <h1 className="font-display text-5xl sm:text-6xl tracking-wide leading-none mb-5 uppercase">
-          League<span className="text-primary">MN</span>
+          Lig<span className="text-primary">.MN</span>
         </h1>
         <p className="text-ink2 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
           Манай системд бүртгэгдсэн бүх лигийн мэдээллийг нэг дороос авах боломжтой.
@@ -62,7 +62,7 @@ export default async function AboutPage() {
               БОЛГОНО
             </h2>
             <p className="text-ink2 leading-relaxed mb-4">
-              LeagueMN нь Монголын сагсанбөмбөгийн лигүүдийг цахим орчинд нэгтгэж, тоглогч, тэмцээний зохион байгуулагч болон
+              Lig.MN нь Монголын сагсанбөмбөгийн лигүүдийг цахим орчинд нэгтгэж, тоглогч, тэмцээний зохион байгуулагч болон
               фанатуудад зориулан мэдээлэл нээлттэй болгох зорилгоор байгуулагдсан.
             </p>
             <p className="text-ink2 leading-relaxed">Бодит цагийн оноо, тоглогч бүрийн дэлгэрэнгүй статистик, тоглолтын хуваарь — бүгдийг нэг дор, үнэгүй.</p>
@@ -100,7 +100,7 @@ export default async function AboutPage() {
 
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-16 text-center">
         <h2 className="font-display text-3xl sm:text-4xl mb-4 uppercase">Лигээ нэмэх үү?</h2>
-        <p className="text-ink2 mb-7 max-w-lg mx-auto">Таны тэмцээнийг LeagueMN-д нэмж, фанатуудтайгаа холбогдоорой.</p>
+        <p className="text-ink2 mb-7 max-w-lg mx-auto">Таны тэмцээнийг Lig.MN-д нэмж, фанатуудтайгаа холбогдоорой.</p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium text-white bg-primary hover:opacity-90 transition-opacity">
             <span className="material-icons-round text-lg">mail</span> Холбоо барих
