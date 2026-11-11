@@ -9,6 +9,7 @@ import BottomNav from '../public/BottomNav';
 import { NavSelect } from '../public/NavSelect';
 import { seasonSponsors } from '@/lib/sponsors';
 import SponsorStrip from './SponsorStrip';
+import { getPlayoff } from '@/lib/playoff';
 
 const GENDERS = [
   ['M', 'Эрэгтэй'],
@@ -19,7 +20,9 @@ export default async function LeagueShell({ ctx, active, children }: { ctx: Leag
   const { lg, seasons, sid, season, ac, slug } = ctx;
   const logo = lg.logo ? fileUrl(lg.logo) : null;
   const light = isLightColor(ac);
-  const sponsors = season ? await seasonSponsors(season.id) : [];
+  const [sponsors, playoff] = season ? await Promise.all([seasonSponsors(season.id), getPlayoff(season.id)]) : [[], null];
+  // Плейофф үүсгээгүй улиралд tab харуулахгүй
+  const tabs = LEAGUE_TABS.filter((t) => t.key !== 'playoff' || playoff || active === 'playoff');
 
   // Лиг эрэгтэй, эмэгтэй хоёр улиралтай бол хүйсээр шүүнэ
   const gender = season ? seasonGender(season.name) : null;
@@ -85,7 +88,7 @@ export default async function LeagueShell({ ctx, active, children }: { ctx: Leag
 
       <nav className="lg-tabs" aria-label="Лигийн цэс">
         <div className="lg-tabs-in">
-          {LEAGUE_TABS.map((t) => (
+          {tabs.map((t) => (
             <Link
               key={t.key}
               href={lgPath(slug, sid, t.key)}

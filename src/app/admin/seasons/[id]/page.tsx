@@ -10,6 +10,7 @@ import { addSeasonTeam, removeSeasonTeam, updateZone } from '../actions';
 import MatchTable from '@/components/admin/MatchTable';
 import { seasonSponsors } from '@/lib/sponsors';
 import SponsorsTab from './SponsorsTab';
+import PlayoffTab from './PlayoffTab';
 
 export const metadata = { title: 'Улирал' };
 
@@ -20,7 +21,7 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
   const user = await requireRole(['admin', 'commissioner']);
   const id = parseInt((await params).id, 10) || 0;
   const rawTab = (await searchParams).tab;
-  const tab = rawTab === 'matches' || rawTab === 'sponsors' ? rawTab : 'teams';
+  const tab = rawTab === 'matches' || rawTab === 'sponsors' || rawTab === 'playoff' ? rawTab : 'teams';
 
   const season = await queryOne<{ id: number; name: string; league_id: number; league_name: string; start_date: string | null; end_date: string | null; status: string }>(
     'SELECT s.id, s.name, s.league_id, s.start_date, s.end_date, s.status, l.name AS league_name FROM seasons s JOIN leagues l ON l.id=s.league_id WHERE s.id=?',
@@ -90,12 +91,12 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
         </div>
       </div>
 
-      <div className="border-b border-line mb-5 flex">
-        {([['teams', 'Багууд', 'groups'], ['matches', 'Тоглолтууд', 'sports_basketball'], ['sponsors', 'Спонсорууд', 'handshake']] as const).map(([k, l, ic]) => (
+      <div className="border-b border-line mb-5 flex flex-wrap">
+        {([['teams', 'Багууд', 'groups'], ['matches', 'Тоглолтууд', 'sports_basketball'], ['playoff', 'Плейофф', 'account_tree'], ['sponsors', 'Спонсорууд', 'handshake']] as const).map(([k, l, ic]) => (
           <Link
             key={k}
             href={`/admin/seasons/${id}?tab=${k}`}
-            className={`px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px flex items-center gap-1.5 ${tab === k ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-ink'}`}
+            className={`px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px flex items-center gap-1.5 shrink-0 ${tab === k ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-ink'}`}
           >
             <I n={ic} className="text-base" /> {l}
           </Link>
@@ -208,6 +209,8 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
         </>
       ) : tab === 'sponsors' ? (
         <SponsorsTab seasonId={id} sponsors={sponsors} />
+      ) : tab === 'playoff' ? (
+        <PlayoffTab seasonId={id} teams={teams.map((t) => ({ id: t.id, name: t.team_name }))} />
       ) : (
         <>
           <div className="flex items-center justify-between gap-3 mb-3">

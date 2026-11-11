@@ -23,6 +23,7 @@ const LEADER_CATS: [StatKey, string, string][] = [
   ['pts', 'Оноо', 'PPG'],
   ['ast', 'Дамжуулалт', 'APG'],
   ['reb', 'Самбар', 'RPG'],
+  ['stl', 'Таслалт', 'SPG'],
   ['blk', 'Хаалт', 'BPG'],
 ];
 

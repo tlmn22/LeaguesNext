@@ -44,6 +44,7 @@ export default async function TeamDetail({ params }: P) {
          COALESCE(SUM(CASE WHEN m.status='finished' AND m.home_season_team_id=st.id THEN m.away_score WHEN m.status='finished' AND m.away_season_team_id=st.id THEN m.home_score ELSE 0 END),0) AS pts_ag
        FROM season_teams st
        LEFT JOIN matches m ON m.season_id=st.season_id AND (m.home_season_team_id=st.id OR m.away_season_team_id=st.id)
+         AND COALESCE(m.stage,'regular')<>'playoff'
        WHERE st.id=?`,
       [stid],
     ),

@@ -11,7 +11,7 @@ const fullName = (p: LeaderRow) => `${tc(p.last_name)} ${tc(p.first_name)}`;
 /** "Тэргүүлэгчид" — ангилал бүрт 1-р байр том, 2–5 жагсаалтаар */
 export default function LeaderCards({ cards, sid, ac }: { cards: LeaderCard[]; sid: number; ac: string }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       {cards.map((c) => {
         const [top, ...rest] = c.rows;
         const color = top.team_color ? accentOf(top.team_color) : ac;
@@ -33,14 +33,14 @@ export default function LeaderCards({ cards, sid, ac }: { cards: LeaderCard[]; s
                 <img
                   src={fileUrl(top.photo_path)}
                   alt=""
-                  className="absolute right-0 bottom-0 h-[128px] w-[118px] object-cover object-top transition-transform duration-300 group-hover:scale-105 origin-bottom"
+                  className="absolute right-0 bottom-0 h-[128px] w-[118px] xl:h-[116px] xl:w-[96px] object-cover object-top transition-transform duration-300 group-hover:scale-105 origin-bottom"
                 />
               ) : (
                 <span className="absolute right-4 bottom-4 w-20 h-20 rounded-full bg-white/15 grid place-items-center font-display text-3xl">
                   {initials(tc(top.last_name), 1)}
                 </span>
               )}
-              <div className="absolute left-4 top-10 right-[124px]">
+              <div className="absolute left-4 top-10 right-[124px] xl:right-[100px]">
                 {top.team_logo && (
                   <img src={fileUrl(top.team_logo)} alt="" className="w-7 h-7 rounded-md bg-white/90 object-contain p-0.5 mb-1.5" />
                 )}

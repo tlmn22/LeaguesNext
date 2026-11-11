@@ -11,7 +11,9 @@ export type MatchRow = {
   stage: string | null; game_no: number | null; arena_name: string | null; live_embed_code: string | null; status: string;
 };
 
-export default async function MatchForm({ user, match, seasonId }: { user: User; match?: MatchRow; seasonId?: number }) {
+type Preset = { home?: number; away?: number; stage?: string; game_no?: number };
+
+export default async function MatchForm({ user, match, seasonId, preset }: { user: User; match?: MatchRow; seasonId?: number; preset?: Preset }) {
   const isAdm = user.role === 'admin';
   const seasons = await query<{ id: number; name: string; league_name: string }>(
     `SELECT s.id, s.name, l.name AS league_name FROM seasons s JOIN leagues l ON l.id=s.league_id
@@ -34,7 +36,7 @@ export default async function MatchForm({ user, match, seasonId }: { user: User;
         <h2 className="font-display text-xl uppercase tracking-wide mb-5">{f ? 'Тоглолт засах' : 'Шинэ тоглолт'}</h2>
         <form action={saveMatch} className="space-y-5">
           {f && <input type="hidden" name="id" value={f.id} />}
-          <SeasonTeamPicker seasons={seasons} teams={teams} seasonId={sid} home={f?.home_season_team_id} away={f?.away_season_team_id} />
+          <SeasonTeamPicker seasons={seasons} teams={teams} seasonId={sid} home={f?.home_season_team_id ?? preset?.home} away={f?.away_season_team_id ?? preset?.away} />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
               <label className={LBL}>Огноо, цаг <span className="text-live">*</span></label>
@@ -42,7 +44,7 @@ export default async function MatchForm({ user, match, seasonId }: { user: User;
             </div>
             <div>
               <label className={LBL}>Шат</label>
-              <select name="stage" defaultValue={f?.stage ?? 'regular'} className={INP}>
+              <select name="stage" defaultValue={f?.stage ?? preset?.stage ?? 'regular'} className={INP}>
                 <option value="regular">Үндсэн</option>
                 <option value="playoff">Плейофф</option>
                 <option value="allstar">Одны тоглолт</option>
@@ -51,7 +53,7 @@ export default async function MatchForm({ user, match, seasonId }: { user: User;
             </div>
             <div>
               <label className={LBL}>Тоглолтын №</label>
-              <input type="number" name="game_no" min={1} defaultValue={f?.game_no ?? ''} className={INP} />
+              <input type="number" name="game_no" min={1} defaultValue={f?.game_no ?? preset?.game_no ?? ''} className={INP} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_200px] gap-5">

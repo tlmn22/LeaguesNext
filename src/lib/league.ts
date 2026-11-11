@@ -48,6 +48,7 @@ export const LEAGUE_TABS = [
   { key: 'home', icon: 'home', label: 'Тойм' },
   { key: 'matches', icon: 'sports_basketball', label: 'Хуваарь' },
   { key: 'standings', icon: 'format_list_numbered', label: 'Хүснэгт' },
+  { key: 'playoff', icon: 'account_tree', label: 'Плейофф' },
   { key: 'stats', icon: 'bar_chart', label: 'Статистик' },
   { key: 'teams', icon: 'groups', label: 'Багууд' },
   { key: 'players', icon: 'person', label: 'Тоглогчид' },
@@ -92,6 +93,7 @@ export async function getStandings(sid: number) {
      FROM season_teams st JOIN teams t ON t.id=st.team_id
      LEFT JOIN matches m ON m.season_id=st.season_id
        AND (m.home_season_team_id=st.id OR m.away_season_team_id=st.id)
+       AND COALESCE(m.stage,'regular')<>'playoff'
      WHERE st.season_id=?
      GROUP BY st.id, t.name, t.logo_path, st.zone
      ORDER BY st.zone`,
@@ -156,7 +158,7 @@ export async function getLeaders(sid: number, key: StatKey, limit: number) {
      JOIN players p ON p.id=mps.player_id
      JOIN matches m ON m.id=mps.match_id
      JOIN teams t ON t.id=mps.team_id
-     WHERE m.season_id=? AND (mps.minutes > 0 OR mps.seconds > 0)
+     WHERE m.season_id=? AND COALESCE(m.stage,'regular')<>'playoff' AND (mps.minutes > 0 OR mps.seconds > 0)
      GROUP BY p.id, p.first_name, p.last_name, p.photo_path
      HAVING COUNT(DISTINCT mps.match_id)>=1
      ORDER BY val DESC, total DESC

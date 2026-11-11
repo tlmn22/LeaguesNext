@@ -146,7 +146,11 @@ html.dark {
   .lmn-team-abbr { font: 600 16px/20px var(--lmn-display); letter-spacing: .04em; }
   .lmn-team-score { font: 600 22px/26px var(--lmn-display); font-variant-numeric: tabular-nums; }
   .lmn-team.is-loser .lmn-team-abbr, .lmn-team.is-loser .lmn-team-score { color: var(--lmn-text-secondary); font-weight: 500; }
-  .lmn-team.is-winner .lmn-team-score::after { content: ""; display: inline-block; margin-left: 6px; border: 5px solid transparent; border-right-color: var(--lmn-accent); vertical-align: middle; translate: 0 -2px; }
+  /* ◀ сумны зайг бүх мөрөнд үлдээнэ — оноонууд баруун талаараа тэгш байна */
+  .lmn-team-score { min-width: 3ch; text-align: right; }
+  .lmn-team-score::after { content: ""; display: inline-block; margin-left: 4px; border: 5px solid transparent; vertical-align: middle; translate: 0 -2px; }
+  .lmn-team.is-winner .lmn-team-score { font-weight: 700; }
+  .lmn-team.is-winner .lmn-team-score::after { border-right-color: var(--lmn-text); }
 
   /* ---------- news media ---------- */
   .lmn-media { position: relative; aspect-ratio: 16 / 9; border-radius: var(--lmn-radius-xl); overflow: hidden; background: var(--lmn-sunken); }
@@ -377,5 +381,54 @@ html.dark {
     .lg-sp-row { gap: 32px; }
     .lg-sp-logo { height: 36px; }
     .lg-sp-group.is-title .lg-sp-logo { height: 48px; }
+  }
+
+  /* ── Плейофф сүлжээ (playoff tree) ─────────────────────────── */
+  .po-wrap { overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+  .po { display: flex; min-width: max-content; --po-gap: 20px; --po-line: var(--lm-line2); }
+  .po-col { display: flex; flex-direction: column; width: 252px; }
+  .po-head { height: 44px; padding: 0 var(--po-gap); display: flex; flex-direction: column; justify-content: center; }
+  .po-head b { font: 600 17px/1.1 var(--lmn-display); text-transform: uppercase; letter-spacing: .02em; color: var(--lm-text); }
+  .po-head span { font: 600 11px/14px var(--lmn-sans); color: var(--lm-muted); }
+  .po-body { flex: 1; display: flex; flex-direction: column; }
+  .po-item { flex: 1; min-height: 116px; display: flex; align-items: center; position: relative; padding: 8px var(--po-gap); }
+  /* Хос тулааныг дараагийн шаттай холбох ⊐ шугам */
+  .po-col.has-out .po-item::after { content: ""; position: absolute; right: 0; width: var(--po-gap); height: 50%; border: 0 solid var(--po-line); border-right-width: 2px; }
+  .po-col.has-out .po-item:nth-child(odd)::after { top: 50%; border-top-width: 2px; border-top-right-radius: 8px; }
+  .po-col.has-out .po-item:nth-child(even)::after { top: 0; border-bottom-width: 2px; border-bottom-right-radius: 8px; }
+  .po-col.is-final .po-item::after { top: 50% !important; height: 0; border-right-width: 0 !important; border-radius: 0 !important; }
+  .po-col.has-in .po-item::before { content: ""; position: absolute; left: 0; top: 50%; width: var(--po-gap); border-top: 2px solid var(--po-line); }
+  .po-col.has-out .po-item.is-done::after, .po-col.has-in .po-item.is-fed::before { border-color: var(--ac); }
+  .po-item.is-blank::after, .po-item.is-blank::before { display: none; }
+
+  .po-card { display: block; width: 100%; border: 1px solid var(--lm-line); border-radius: 12px; background: var(--lm-surface); overflow: hidden; transition: border-color .15s, transform .15s; }
+  a.po-card:hover { border-color: var(--ac); transform: translateY(-1px); }
+  .po-team { display: grid; grid-template-columns: 20px 28px 1fr auto; align-items: center; gap: 8px; padding: 8px 12px; min-height: 44px; }
+  .po-team + .po-team { border-top: 1px solid var(--lm-line); }
+  .po-seed { font: 600 11px/1 var(--lmn-sans); color: var(--lm-muted); text-align: right; }
+  .po-logo { width: 28px; height: 28px; border-radius: 8px; object-fit: cover; background: var(--lm-line); display: grid; place-items: center; font: 600 11px/1 var(--lmn-display); color: var(--lm-muted); }
+  .po-name { font: 600 14px/1.2 var(--lmn-sans); color: var(--lm-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .po-wins { font: 600 20px/1 var(--lmn-display); color: var(--lm-muted); min-width: 14px; text-align: right; }
+  .po-team.is-win .po-name { font-weight: 800; }
+  .po-team.is-win .po-wins { color: var(--ac); }
+  .po-team.is-lose { opacity: .5; }
+  .po-team.is-tbd .po-name { color: var(--lm-muted); font-weight: 500; font-style: italic; }
+  .po-meta { padding: 5px 12px; font: 600 11px/14px var(--lmn-sans); color: var(--lm-muted); background: var(--lm-raise); border-top: 1px solid var(--lm-line); display: flex; justify-content: space-between; gap: 8px; }
+  .po-meta .is-live { color: var(--lm-live); }
+
+  .po-champ { width: 100%; text-align: center; border-radius: 14px; padding: 18px 14px; border: 2px solid var(--ac); background: color-mix(in srgb, var(--ac) 10%, var(--lm-surface)); }
+  .po-champ.is-tbd { border-style: dashed; border-color: var(--lm-line2); background: var(--lm-surface); }
+  .po-champ .mi { font-size: 34px; color: var(--ac); }
+  .po-champ.is-tbd .mi { color: var(--lm-muted); }
+  .po-champ img, .po-champ .po-logo { display: grid; width: 56px; height: 56px; border-radius: 14px; margin: 6px auto; font-size: 18px; }
+  .po-champ b { display: block; font: 600 20px/1.15 var(--lmn-display); text-transform: uppercase; color: var(--lm-text); }
+  .po-champ small { display: block; margin-top: 4px; font: 700 11px/14px var(--lmn-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--lm-muted); }
+
+  .po-series { border: 1px solid var(--lm-line); border-radius: 12px; background: var(--lm-surface); scroll-margin-top: 140px; }
+  .po-series:target { border-color: var(--ac); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ac) 20%, transparent); }
+  @media (max-width: 899px) {
+    .po { --po-gap: 14px; }
+    .po-col { width: 220px; }
+    .po-col.is-champ { width: 180px; }
   }
 }

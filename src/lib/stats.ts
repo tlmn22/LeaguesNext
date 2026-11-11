@@ -2,6 +2,7 @@ import 'server-only';
 import { query } from './db';
 import { fileUrl, tc } from './format';
 import { teamPath } from './league';
+import { phaseSql, type Phase } from './playoff';
 
 /** Datatable-ийн нэг мөр — v: тоглолт тутмын дундаж, t: улирлын нийт (түлхүүр ижил; null бол "-") */
 export type StatRow = { id: number; href: string; name: string; sub: string; photo: string | null; pos: string | null; v: Record<string, number | null>; t: Record<string, number | null> };
@@ -57,7 +58,7 @@ function totals(s: Sums, minutes: boolean): Record<string, number | null> {
 }
 
 /** Улирлын бүх тоглогчийн дундаж статистик (зөвхөн тоглосон тоглолтууд — DNP тооцохгүй) */
-export async function playerStats(sid: number): Promise<StatRow[]> {
+export async function playerStats(sid: number, phase: Phase = 'regular'): Promise<StatRow[]> {
   const rows = await query<Sums & { id: number; first_name: string; last_name: string; photo_path: string | null; team: string; pos: string | null }>(
     `SELECT p.id, p.first_name, p.last_name, p.photo_path, MAX(t.name) AS team,
             (SELECT MAX(tsr.position) FROM team_season_roster tsr JOIN season_teams st ON st.id=tsr.season_team_id
@@ -67,7 +68,7 @@ export async function playerStats(sid: number): Promise<StatRow[]> {
      JOIN matches m ON m.id=mps.match_id
      JOIN players p ON p.id=mps.player_id
      JOIN teams t ON t.id=mps.team_id
-     WHERE m.season_id=? AND (mps.minutes > 0 OR mps.seconds > 0)
+     WHERE m.season_id=? AND ${phaseSql(phase)} AND (mps.minutes > 0 OR mps.seconds > 0)
      GROUP BY p.id, p.first_name, p.last_name, p.photo_path`,
     [sid, sid],
   );
@@ -84,7 +85,7 @@ export async function playerStats(sid: number): Promise<StatRow[]> {
 }
 
 /** Улирлын багуудын дундаж статистик + ялалт/ялагдал */
-export async function teamStats(sid: number, slug: string): Promise<StatRow[]> {
+export async function teamStats(sid: number, slug: string, phase: Phase = 'regular'): Promise<StatRow[]> {
   const [teams, sums, wl] = await Promise.all([
     query<{ stid: number; team_id: number; name: string; logo_path: string | null }>(
       'SELECT st.id AS stid, t.id AS team_id, t.name, t.logo_path FROM season_teams st JOIN teams t ON t.id=st.team_id WHERE st.season_id=?',
@@ -93,7 +94,7 @@ export async function teamStats(sid: number, slug: string): Promise<StatRow[]> {
     query<Sums & { team_id: number }>(
       `SELECT mps.team_id, ${SUMS}
        FROM match_player_stats mps JOIN matches m ON m.id=mps.match_id
-       WHERE m.season_id=? GROUP BY mps.team_id`,
+       WHERE m.season_id=? AND ${phaseSql(phase)} GROUP BY mps.team_id`,
       [sid],
     ),
     query<{ team_id: number; w: number; l: number }>(
@@ -101,7 +102,7 @@ export async function teamStats(sid: number, slug: string): Promise<StatRow[]> {
          SUM(CASE WHEN (m.home_season_team_id=st.id AND m.home_score>m.away_score) OR (m.away_season_team_id=st.id AND m.away_score>m.home_score) THEN 1 ELSE 0 END) AS w,
          SUM(CASE WHEN (m.home_season_team_id=st.id AND m.home_score<m.away_score) OR (m.away_season_team_id=st.id AND m.away_score<m.home_score) THEN 1 ELSE 0 END) AS l
        FROM season_teams st
-       JOIN matches m ON m.season_id=st.season_id AND m.status='finished' AND (m.home_season_team_id=st.id OR m.away_season_team_id=st.id)
+       JOIN matches m ON m.season_id=st.season_id AND m.status='finished' AND ${phaseSql(phase)} AND (m.home_season_team_id=st.id OR m.away_season_team_id=st.id)
        WHERE st.season_id=? GROUP BY st.team_id`,
       [sid],
     ),
