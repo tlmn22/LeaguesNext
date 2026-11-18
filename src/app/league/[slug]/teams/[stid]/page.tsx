@@ -74,7 +74,7 @@ export default async function TeamDetail({ params }: P) {
        JOIN teams ht ON ht.id=hst.team_id
        JOIN teams at2 ON at2.id=ast.team_id
        WHERE m.season_id=? AND (m.home_season_team_id=? OR m.away_season_team_id=?) AND m.status='finished'
-       ORDER BY m.match_datetime DESC LIMIT 5`,
+       ORDER BY m.match_datetime DESC, m.id DESC`,
       [stid, sid, stid, stid],
     ),
   ]);
@@ -193,7 +193,7 @@ export default async function TeamDetail({ params }: P) {
           </div>
 
           <div>
-            <h2 className="text-2xl font-display mb-4">Сүүлийн тоглолтууд</h2>
+            <h2 className="text-2xl font-display mb-4">Болсон бүх тоглолт <span className="text-line2">{matches.length}</span></h2>
             <div className="space-y-3">
               {matches.map((m) => {
                 const won = (m.side === 'home' && m.home_score > m.away_score) || (m.side === 'away' && m.away_score > m.home_score);

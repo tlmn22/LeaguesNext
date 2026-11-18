@@ -5,9 +5,10 @@ import { fmtDate } from '@/lib/format';
 import { BTN, BTN_GHOST, Card, Crumbs, I, INP, LBL } from '@/components/admin/ui';
 import { ImageInput, Submit } from '@/components/admin/client';
 import { saveNews } from './actions';
+import { NEWS_CATEGORIES } from '@/lib/news-categories';
 
 export type NewsRow = {
-  id: number; title: string; season_id: number | null; excerpt: string | null; content: string | null;
+  id: number; title: string; season_id: number | null; category: string; excerpt: string | null; content: string | null;
   cover_image: string | null; status: string; published_at: string | null; created_at: string; updated_at: string;
 };
 
@@ -61,6 +62,14 @@ export default async function NewsForm({ user, news }: { user: User; news?: News
                 <label className={LBL}>Нийтлэх огноо</label>
                 <input type="datetime-local" name="published_at" className={INP} defaultValue={f?.published_at ? fmtDate(f.published_at, 'Y-m-dTH:i') : ''} />
                 <p className="text-xs text-muted mt-1.5">Хоосон бол нийтлэх үеийн цаг. Ирээдүйн огноо тавибал тэр үед харагдана.</p>
+              </div>
+              <div>
+                <label className={LBL}>Төрөл</label>
+                <select name="category" className={INP} defaultValue={f?.category ?? 'general'}>
+                  {NEWS_CATEGORIES.map(([k, l]) => (
+                    <option key={k} value={k}>{l}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className={LBL}>Лиг / Улирал {admin ? '' : <span className="text-live">*</span>}</label>

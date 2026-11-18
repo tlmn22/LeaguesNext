@@ -5,14 +5,15 @@ import { fmtDate } from '@/lib/format';
 import { BTN, Crumbs, Empty, ICON_BTN, ICON_BTN_DANGER, I, PageHead, Pill, TH, TD, TR, Thumb } from '@/components/admin/ui';
 import { ConfirmButton } from '@/components/admin/client';
 import { deleteNews } from './actions';
+import { categoryLabel } from '@/lib/news-categories';
 
 export const metadata = { title: 'Мэдээ' };
 
 export default async function NewsAdmin() {
   const user = await requireRole(['admin', 'commissioner']);
   const admin = isAdmin(user);
-  const news = await query<{ id: number; title: string; status: string; cover_image: string | null; published_at: string | null; created_at: string; league_name: string | null; season_name: string | null }>(
-    `SELECT n.id, n.title, n.status, n.cover_image, n.published_at, n.created_at, l.name AS league_name, s.name AS season_name
+  const news = await query<{ id: number; title: string; status: string; cover_image: string | null; published_at: string | null; created_at: string; league_name: string | null; season_name: string | null; category: string }>(
+    `SELECT n.id, n.title, n.status, n.cover_image, n.published_at, n.created_at, n.category, l.name AS league_name, s.name AS season_name
      FROM news n LEFT JOIN seasons s ON s.id=n.season_id LEFT JOIN leagues l ON l.id=s.league_id
      ${admin ? '' : 'WHERE s.league_id=?'}
      ORDER BY COALESCE(n.published_at, n.created_at) DESC, n.id DESC`,
@@ -48,7 +49,10 @@ export default async function NewsAdmin() {
                   <td className={`${TD} px-4`}>
                     <div className="flex items-center gap-3">
                       <Thumb src={n.cover_image} className="w-16 h-10 rounded-md" icon="newspaper" />
-                      <div className="font-medium line-clamp-2 min-w-0">{n.title}</div>
+                      <div className="min-w-0">
+                        <div className="font-medium line-clamp-2">{n.title}</div>
+                        <div className="text-xs text-muted">{categoryLabel(n.category) ?? 'Ерөнхий'}</div>
+                      </div>
                     </div>
                   </td>
                   <td className={`${TD} text-ink2`}>

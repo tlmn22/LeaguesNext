@@ -6,6 +6,7 @@ import { execute, queryOne, scalar } from '@/lib/db';
 import { flashRedirect } from '@/lib/flash';
 import { int, intOrNull, isDate, oneOf, str } from '@/lib/form';
 import { canSeason, canSeasonTeam } from '@/lib/scope';
+import { UploadError, deleteUpload, saveImage } from '@/lib/upload';
 
 const STATUSES = ['registration', 'active', 'finished'] as const;
 
@@ -53,6 +54,38 @@ export async function deleteSeason(fd: FormData) {
 }
 
 // ── Улирлын багууд ─────────────────────────────────────────────
+
+export async function updateSeasonTeamLogo(fd: FormData) {
+  const user = await requireRole(['admin', 'commissioner']);
+  const stid = int(fd, 'season_team_id');
+  const seasonId = int(fd, 'season_id');
+  const team = await queryOne<{ team_id: number; season_id: number; league_id: number; name: string; logo_path: string | null }>(
+    `SELECT st.team_id, st.season_id, s.league_id, t.name, t.logo_path
+     FROM season_teams st JOIN seasons s ON s.id=st.season_id JOIN teams t ON t.id=st.team_id
+     WHERE st.id=? AND st.season_id=?`,
+    [stid, seasonId],
+  );
+  if (!team) return flashRedirect('danger', 'Улирлын баг олдсонгүй.', '/admin/seasons');
+  if (!canManageLeague(user, team.league_id)) return flashRedirect('danger', 'Эрхгүй.', '/admin/seasons');
+  const back = `/admin/seasons/${team.season_id}?tab=teams`;
+  let logo: string | null;
+  try {
+    logo = await saveImage(fd.get('logo'), 'teams', 'team');
+  } catch (e) {
+    if (e instanceof UploadError) return flashRedirect('danger', e.message, back);
+    throw e;
+  }
+  if (!logo) return flashRedirect('danger', 'Логоны зураг сонгоно уу.', back);
+  try {
+    await execute('UPDATE teams SET logo_path=?, updated_by_user_id=? WHERE id=?', [logo, user.id, team.team_id]);
+  } catch (e) {
+    await deleteUpload(logo);
+    throw e;
+  }
+  await deleteUpload(team.logo_path);
+  revalidatePath('/', 'layout');
+  return flashRedirect('success', `"${team.name}" багийн лого шинэчлэгдлээ.`, back);
+}
 
 export async function addSeasonTeam(fd: FormData) {
   const user = await requireRole(['admin', 'commissioner']);

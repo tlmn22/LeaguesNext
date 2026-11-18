@@ -173,7 +173,7 @@ export function NewsList({ items, title, linkLabel = 'Бүх мэдээ →' }: 
 
 /* ---------- sidebar ---------- */
 
-function Panel({ title, live, empty, foot, children }: { title: string; live?: boolean; empty?: ReactNode; foot?: [string, string]; children?: ReactNode }) {
+export function Panel({ title, live, empty, foot, children }: { title: string; live?: boolean; empty?: ReactNode; foot?: [string, string]; children?: ReactNode }) {
   return (
     <section className="lmn-card">
       <div className="lmn-panel-h">
@@ -188,7 +188,10 @@ function Panel({ title, live, empty, foot, children }: { title: string; live?: b
   );
 }
 
-export type LeagueRowData = { href: string; name: string; season: string; abbr: string; logo: string | null; color: string; status: string; teams: number };
+export type LeaguePanelData = {
+  id: number; name: string; abbr: string; logo: string | null; color: string;
+  seasons: { id: number; href: string; name: string; status: string; teams: number }[];
+};
 
 const SEASON_STATUS: Record<string, [string, string]> = {
   active: ['Явагдаж байна', 'var(--lmn-active-text)'],
@@ -196,32 +199,44 @@ const SEASON_STATUS: Record<string, [string, string]> = {
   finished: ['Дууссан', 'var(--lmn-text-secondary)'],
 };
 
-export function LeagueRow({ l }: { l: LeagueRowData }) {
-  const [label, color] = SEASON_STATUS[l.status] ?? SEASON_STATUS.finished;
+export function LeagueRow({ l }: { l: LeaguePanelData }) {
   return (
-    <Link href={l.href} className="lmn-prow" style={{ '--lc': l.color } as CSSProperties}>
-      <span className="lmn-ltile">{l.logo ? <img src={l.logo} alt="" /> : <span>{l.abbr}</span>}</span>
-      <span style={{ minWidth: 0 }}>
-        <h4 className="lmn-lname lmn-t" title={l.name}>{l.name}</h4>
-        <span className="lmn-lseason" style={{ display: 'block' }}>{l.season}</span>
-        <span className="lmn-pnum" style={{ display: 'block', marginTop: 2 }}>
-          <b style={{ color }}>{label}</b> · {l.teams} баг
+    <details className="lmn-league-group" style={{ '--lc': l.color } as CSSProperties}>
+      <summary className="lmn-prow lmn-league-toggle">
+        <span className="lmn-ltile">{l.logo ? <img src={l.logo} alt="" /> : <span>{l.abbr}</span>}</span>
+        <span style={{ minWidth: 0 }}>
+          <span className="lmn-lname lmn-t" title={l.name}>{l.name}</span>
+          <span className="lmn-lseason">{l.seasons.length} улирал</span>
         </span>
-      </span>
-      <Icon n="chevron_right" className="lmn-chev" />
-    </Link>
+        <Icon n="expand_more" className="lmn-league-arrow" />
+      </summary>
+      <div className="lmn-league-seasons">
+        {l.seasons.length ? l.seasons.map((season) => {
+          const [label, color] = SEASON_STATUS[season.status] ?? SEASON_STATUS.finished;
+          return (
+            <Link key={season.id} href={season.href} className="lmn-season-link">
+              <span style={{ minWidth: 0 }}>
+                <span className="lmn-season-name">{season.name}</span>
+                <span className="lmn-pnum"><b style={{ color }}>{label}</b> · {season.teams} баг</span>
+              </span>
+              <Icon n="chevron_right" className="lmn-chev" />
+            </Link>
+          );
+        }) : <p className="lmn-season-empty">Улирал бүртгэгдээгүй байна.</p>}
+      </div>
+    </details>
   );
 }
 
-export function LeaguesPanel({ leagues }: { leagues: LeagueRowData[] }) {
+export function LeaguesPanel({ leagues }: { leagues: LeaguePanelData[] }) {
   return (
     <Panel
       title="Лигүүд"
-      live={leagues.some((l) => l.status === 'active')}
+      live={leagues.some((l) => l.seasons.some((s) => s.status === 'active'))}
       foot={['Бүх лиг ›', '/leagues']}
       empty={!leagues.length && <EmptyState icon="emoji_events" title="Лиг алга" text="Шинэ лиг нэмэгдэхэд энд харагдана." compact />}
     >
-      {leagues.map((l) => <LeagueRow key={l.href} l={l} />)}
+      {leagues.map((l) => <LeagueRow key={l.id} l={l} />)}
     </Panel>
   );
 }

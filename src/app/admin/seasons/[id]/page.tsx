@@ -5,8 +5,8 @@ import { canManageLeague, requireRole } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 import { STAGES, fileUrl, fmtDate } from '@/lib/format';
 import { BTN, BTN_GHOST, BTN_SOLID, Crumbs, Empty, GENDER, ICON_BTN, ICON_BTN_DANGER, I, INP, LBL, Pill, TH, TD, TR, Thumb } from '@/components/admin/ui';
-import { ConfirmButton, Modal, SearchPick, Submit } from '@/components/admin/client';
-import { addSeasonTeam, removeSeasonTeam, updateZone } from '../actions';
+import { ConfirmButton, ImageInput, Modal, SearchPick, Submit } from '@/components/admin/client';
+import { addSeasonTeam, removeSeasonTeam, updateSeasonTeamLogo, updateZone } from '../actions';
 import MatchTable from '@/components/admin/MatchTable';
 import { seasonSponsors } from '@/lib/sponsors';
 import SponsorsTab from './SponsorsTab';
@@ -147,6 +147,22 @@ export default async function SeasonView({ params, searchParams }: { params: Pro
                 return (
                   <div key={t.id} className="border border-line rounded-xl bg-surface p-4 text-center flex flex-col">
                     <Thumb src={t.logo_path} icon="groups" className="w-14 h-14 rounded-xl mx-auto mb-2" />
+                    <div className="mb-2">
+                      <Modal trigger={<><I n="image" className="text-sm" /> {t.logo_path ? 'Лого солих' : 'Лого нэмэх'}</>} triggerClass="inline-flex items-center gap-1 text-xs text-muted hover:text-primary" title={`${t.team_name} — Лого`}>
+                        <form action={updateSeasonTeamLogo} className="space-y-4 text-left">
+                          <input type="hidden" name="season_team_id" value={t.id} />
+                          <input type="hidden" name="season_id" value={id} />
+                          <div>
+                            <div className={LBL}>Логоны зураг</div>
+                            <ImageInput name="logo" current={t.logo_path ? fileUrl(t.logo_path) : null} className="h-24 w-24 object-contain rounded-lg border border-line mt-2.5" />
+                            <p className="text-xs text-muted mt-2">JPG, PNG, WEBP, GIF · 8MB хүртэл</p>
+                          </div>
+                          <div className="flex justify-end">
+                            <Submit className={BTN_SOLID}>Хадгалах</Submit>
+                          </div>
+                        </form>
+                      </Modal>
+                    </div>
                     <div className="font-semibold">{t.team_name}</div>
                     {t.short_name && <div className="text-[11px] text-muted">{t.short_name}</div>}
                     <div className="mt-1.5 mb-1">

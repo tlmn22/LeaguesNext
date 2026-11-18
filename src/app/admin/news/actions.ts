@@ -7,6 +7,7 @@ import { flashRedirect } from '@/lib/flash';
 import { int, intOrNull, oneOf, str } from '@/lib/form';
 import { canSeason } from '@/lib/scope';
 import { UploadError, deleteUpload, saveImage } from '@/lib/upload';
+import { CATEGORY_KEYS } from '@/lib/news-categories';
 
 const STATUSES = ['draft', 'published'] as const;
 
@@ -26,6 +27,7 @@ export async function saveNews(fd: FormData) {
   const excerpt = str(fd, 'excerpt') || null;
   const content = str(fd, 'content') || null;
   const status = oneOf(str(fd, 'status'), STATUSES, 'draft');
+  const category = oneOf(str(fd, 'category'), CATEGORY_KEYS, 'general');
   const dtRaw = str(fd, 'published_at');
   const publishedAt = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dtRaw) ? dtRaw.replace('T', ' ').slice(0, 16) + ':00' : null;
 
@@ -48,19 +50,19 @@ export async function saveNews(fd: FormData) {
     if (!(await canNews(user, old.season_id))) return flashRedirect('danger', 'Эрхгүй.', '/admin/news');
     // Огноо оруулаагүй бол анх нийтлэх үед одоогийн цагийг тавина
     await execute(
-      `UPDATE news SET title=?, season_id=?, excerpt=?, content=?, status=?,
+      `UPDATE news SET title=?, season_id=?, category=?, excerpt=?, content=?, status=?,
          published_at=COALESCE(?::timestamp, published_at, CASE WHEN ?='published' THEN app_now() END)${cover ? ', cover_image=?' : ''}
        WHERE id=?`,
       cover
-        ? [title, seasonId, excerpt, content, status, publishedAt, status, cover, id]
-        : [title, seasonId, excerpt, content, status, publishedAt, status, id],
+        ? [title, seasonId, category, excerpt, content, status, publishedAt, status, cover, id]
+        : [title, seasonId, category, excerpt, content, status, publishedAt, status, id],
     );
     if (cover) await deleteUpload(old.cover_image);
   } else {
     await execute(
-      `INSERT INTO news (title, season_id, excerpt, content, status, cover_image, created_by, published_at)
-       VALUES (?,?,?,?,?,?,?, COALESCE(?::timestamp, CASE WHEN ?='published' THEN app_now() END))`,
-      [title, seasonId, excerpt, content, status, cover, user.id, publishedAt, status],
+      `INSERT INTO news (title, season_id, category, excerpt, content, status, cover_image, created_by, published_at)
+       VALUES (?,?,?,?,?,?,?,?, COALESCE(?::timestamp, CASE WHEN ?='published' THEN app_now() END))`,
+      [title, seasonId, category, excerpt, content, status, cover, user.id, publishedAt, status],
     );
   }
 

@@ -5,7 +5,7 @@ import { upcomingGames } from '@/lib/upcoming';
 import { leagueHref } from '@/components/public/LeagueCard';
 import {
   EmptyState, LeaguesPanel, NewsCard, NewsFeatured, NewsList, ResultsStrip, SectionHeader, UpcomingPanel,
-  type LeagueRowData, type Result, type ResultDay,
+  type LeaguePanelData, type Result, type ResultDay,
 } from '@/components/public/lmn';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +17,7 @@ type Recent = {
 
 type LeagueSeason = {
   id: number; name: string; slug: string | null; logo: string | null; primary_color: string | null;
-  sid: number; sname: string; sstatus: string; team_cnt: number;
+  sid: number | null; sname: string | null; sstatus: string | null; team_cnt: number;
 };
 
 const MATCH_TEAMS = `
@@ -46,8 +46,8 @@ export default async function HomePage() {
     query<LeagueSeason>(`
       SELECT l.id, l.name, l.slug, l.logo, l.primary_color, s.id AS sid, s.name AS sname, s.status AS sstatus,
              COUNT(st.id) AS team_cnt
-      FROM seasons s
-      JOIN leagues l ON l.id = s.league_id
+      FROM leagues l
+      LEFT JOIN seasons s ON s.league_id = l.id
       LEFT JOIN season_teams st ON st.season_id = s.id
       GROUP BY l.id, s.id
       ORDER BY CASE s.status WHEN 'active' THEN 1 WHEN 'registration' THEN 2 ELSE 3 END, l.tier ASC, l.name ASC, s.id DESC`),
@@ -78,16 +78,31 @@ export default async function HomePage() {
   }
   const anchor = days.find((d) => d.day >= today);
   if (anchor) anchor.anchor = true;
-  const leagues: LeagueRowData[] = seasons.map((l) => ({
-    href: leagueHref(l.slug, l.id, l.sid),
-    name: l.name,
-    season: l.sname,
-    abbr: initials(l.name),
-    logo: l.logo ? fileUrl(l.logo) : null,
-    color: accentOf(l.primary_color),
-    status: l.sstatus,
-    teams: l.team_cnt,
-  }));
+  const byLeague = new Map<number, LeaguePanelData>();
+  for (const l of seasons) {
+    let league = byLeague.get(l.id);
+    if (!league) {
+      league = {
+        id: l.id,
+        name: l.name,
+        abbr: initials(l.name),
+        logo: l.logo ? fileUrl(l.logo) : null,
+        color: accentOf(l.primary_color),
+        seasons: [],
+      };
+      byLeague.set(l.id, league);
+    }
+    if (l.sid !== null) {
+      league.seasons.push({
+        id: l.sid,
+        href: leagueHref(l.slug, l.id, l.sid),
+        name: l.sname ?? '',
+        status: l.sstatus ?? 'finished',
+        teams: Number(l.team_cnt),
+      });
+    }
+  }
+  const leagues = [...byLeague.values()];
   const [feature, ...rest] = news.map(toCard);
 
   return (
