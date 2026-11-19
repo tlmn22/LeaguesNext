@@ -13,6 +13,7 @@
     "storage:upload": "tsx --env-file=.env.local scripts/upload-storage.mts"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "3.0.3",
     "exceljs": "4.4.0",
     "html2canvas": "1.4.1",
